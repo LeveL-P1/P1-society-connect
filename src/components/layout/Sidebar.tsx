@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,7 +9,7 @@ import {
   CalendarCheck, Phone, FileText, Vote, FolderOpen, History, Wrench,
   Briefcase, Package, UserPlus, Shield, CreditCard, KeyRound,
   ClipboardList, BookOpen, MessageSquare, ShoppingBag, PiggyBank,
-  TrendingUp, HardDrive, HandCoins,
+  TrendingUp, HardDrive, HandCoins, Pin, PinOff, ChevronUp
 } from "lucide-react";
 
 interface NavItem {
@@ -107,12 +108,30 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  // Desktop collapse state - Default to collapsed
+  const [isPinned, setIsPinned] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Module collapse state
+  const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({
+    Governance: true,
+  });
+
+  const toggleModule = (title: string) => {
+    setCollapsedModules(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
+
+  // If pinned OR hovered OR open on mobile, the visual sidebar is expanded
+  const isExpanded = isOpen || isPinned || isHovered;
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   };
 
-  // Filter sections and items based on role
   const visibleSections = navSections
     .map((section) => ({
       ...section,
@@ -138,103 +157,146 @@ export default function Sidebar({
         />
       )}
 
-      <aside
-        aria-label="Sidebar navigation"
-        className={`
-          fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-white border-r border-border
-          flex flex-col overflow-hidden
-          transition-transform duration-250 ease-in-out
-          lg:translate-x-0 lg:static lg:z-auto
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+      {/* Desktop spacer to push content when sidebar expands so it doesn't hide anything */}
+      <div 
+        className={`hidden lg:block transition-all duration-150 ease-in-out shrink-0 ${isExpanded ? "w-[256px]" : "w-[88px]"}`} 
+      />
+
+      {/* Hover Wrapper to capture extreme left edge interactions */}
+      <div
+        className="fixed top-0 left-0 z-50 h-[100dvh] pointer-events-none lg:pointer-events-auto lg:py-4"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
+        <aside
+          aria-label="Sidebar navigation"
+          className={`
+            pointer-events-auto
+            flex flex-col overflow-hidden
+            transition-all duration-150 ease-in-out
+            
+            /* Mobile */
+            ${isOpen ? "translate-x-0 shadow-2xl w-64 h-[100dvh] bg-white border-r border-border rounded-none" : "-translate-x-full w-64 h-[100dvh] bg-white border-r border-border rounded-none absolute top-0 left-0 lg:relative lg:translate-x-0"}
+            
+            /* Desktop */
+            lg:h-full lg:rounded-r-[2rem] lg:rounded-l-none lg:border lg:border-l-0 lg:border-slate-200/50 lg:bg-white/90 lg:backdrop-blur-2xl
+            ${isExpanded ? "lg:w-64 lg:shadow-[30px_0_60px_-15px_rgba(0,0,0,0.3)]" : "lg:w-[88px] lg:shadow-[15px_0_30px_-10px_rgba(0,0,0,0.15)]"}
+          `}
+        >
+
         {/* Society header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border flex-shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-sm flex-shrink-0">
-            <Building2 className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
+        <div className={`flex items-center border-b border-slate-200 bg-primary/20 flex-shrink-0 transition-all duration-150 ${isExpanded ? "p-4 gap-3" : "py-4 justify-center"}`}>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-sm flex-shrink-0">
+            <Building2 className="w-5 h-5 text-white" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p
-              className="font-bold text-sm text-text-primary truncate leading-tight"
-              title={societyName}
-            >
+          
+          <div className={`flex-1 min-w-0 transition-all duration-150 ${isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"}`}>
+            <p className="font-bold text-sm text-slate-800 line-clamp-2 leading-tight" title={societyName}>
               {societyName}
             </p>
             {societyAddress && (
-              <p
-                className="text-xs text-text-secondary truncate leading-tight mt-0.5"
-                title={societyAddress}
-              >
+              <p className="text-[10px] font-bold text-slate-400 truncate leading-tight uppercase tracking-wider mt-0.5" title={societyAddress}>
                 {societyAddress}
               </p>
             )}
           </div>
+
+          {/* Desktop Pin Toggle */}
+          <button
+            onClick={() => setIsPinned(!isPinned)}
+            aria-label={isPinned ? "Unpin sidebar" : "Pin sidebar"}
+            className={`items-center justify-center w-8 h-8 rounded-lg ${isPinned ? "text-primary bg-primary/10" : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"} transition-all duration-150 flex-shrink-0 ${isExpanded ? "hidden lg:flex opacity-100" : "hidden opacity-0"}`}
+            title={isPinned ? "Unstick Sidebar" : "Stick Sidebar"}
+          >
+            {isPinned ? <Pin className="w-4 h-4 fill-current" /> : <PinOff className="w-4 h-4" />}
+          </button>
+
+          {/* Mobile Close */}
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="lg:hidden btn-icon btn-ghost flex-shrink-0"
-            style={{ minHeight: "36px", width: "36px" }}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 flex-shrink-0"
           >
-            <X className="w-4 h-4 text-text-secondary" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2.5">
-          {visibleSections.map((section, si) => (
-            <div key={si} className={si > 0 ? "mt-4" : ""}>
-              {section.title && (
-                <p className="section-title px-2 mb-1">{section.title}</p>
-              )}
-              <ul className="space-y-0.5">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
-                  return (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        onClick={onClose}
-                        className={`sidebar-link ${active ? "active" : ""}`}
-                        aria-current={active ? "page" : undefined}
-                      >
-                        <Icon
-                          style={{
-                            width: 17,
-                            height: 17,
-                            flexShrink: 0,
-                            strokeWidth: active ? 2.25 : 1.75,
-                          }}
-                        />
-                        <span className="truncate">{item.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-3 hide-scrollbar">
+          {visibleSections.map((section, si) => {
+            const isSectionCollapsed = section.title ? collapsedModules[section.title] : false;
+            
+            return (
+              <div key={si} className={si > 0 ? "mt-4" : ""}>
+                {section.title && (
+                  <button 
+                    onClick={() => toggleModule(section.title)}
+                    className={`w-full flex items-center justify-between px-3 mb-1.5 transition-all duration-150 group ${isExpanded ? "opacity-100" : "opacity-0 hidden"}`}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-700 transition-colors">
+                      {section.title}
+                    </span>
+                    <span className={isSectionCollapsed ? "animate-bounce" : ""}>
+                      <ChevronUp 
+                        className={`w-[18px] h-[18px] text-slate-700 group-hover:text-slate-900 transition-all duration-300 ${isSectionCollapsed ? "rotate-180" : ""}`} 
+                        strokeWidth={2.5}
+                      />
+                    </span>
+                  </button>
+                )}
+                
+                <div className={`grid transition-all duration-300 ease-in-out ${isSectionCollapsed ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100"}`}>
+                  <ul className="space-y-0.5 overflow-hidden min-h-0">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = isActive(item.href);
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            onClick={onClose}
+                            className={`flex items-center rounded-lg transition-all duration-150 group ${
+                              isExpanded ? "px-3 py-2 gap-3" : "justify-center p-2.5"
+                            } ${active ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`}
+                            title={!isExpanded ? item.label : undefined}
+                          >
+                            <Icon
+                              className={`flex-shrink-0 transition-transform duration-150 ${
+                                active ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
+                              } ${!isExpanded && "group-hover:scale-110"}`}
+                              style={{ width: 20, height: 20, strokeWidth: active ? 2.5 : 2 }}
+                            />
+                            <span className={`truncate text-sm font-semibold transition-all duration-150 ${
+                              isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+                            }`}>
+                              {item.label}
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
-        {/* Footer — role + logout */}
-        <div className="flex-shrink-0 p-2.5 border-t border-border">
-          <div className="flex items-center gap-2 px-3 py-2 mb-1">
-            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-              <Shield className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-text-secondary capitalize truncate">
-              {userRole}
-            </span>
-          </div>
+        {/* Footer — logout */}
+        <div className={`flex-shrink-0 border-t border-slate-200 bg-rose-500/20 transition-all duration-150 ${isExpanded ? "p-4" : "p-3"}`}>
           <button
             onClick={handleLogout}
-            className="sidebar-link w-full text-danger hover:bg-danger-bg"
+            className={`w-full flex items-center rounded-xl text-rose-600 hover:bg-rose-200 transition-colors duration-150 group overflow-hidden ${isExpanded ? "px-3 py-2.5 gap-3" : "justify-center p-3"}`}
+            title={!isExpanded ? "Sign Out" : undefined}
           >
-            <LogOut style={{ width: 17, height: 17, flexShrink: 0 }} />
-            <span>Sign Out</span>
+            <LogOut className={`w-[19px] h-[19px] flex-shrink-0 transition-transform duration-300 ease-in-out ${isExpanded ? "group-hover:translate-x-[4.5rem]" : "group-hover:translate-x-1"}`} strokeWidth={2.5} />
+            <span className={`text-sm font-bold transition-all duration-300 ${isExpanded ? "opacity-100 group-hover:opacity-0 group-hover:translate-x-2 w-auto" : "opacity-0 w-0 hidden"}`}>
+              Sign Out
+            </span>
           </button>
         </div>
       </aside>
+    </div>
     </>
   );
 }

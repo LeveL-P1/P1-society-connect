@@ -132,10 +132,11 @@ Cards must:
 # Good Card Structure
 
 ```txt
+Distinct Logo / Icon
 Title
 Important Info
 Secondary Metadata
-Action Buttons
+Clear Call-to-Action (CTA) Demarcation
 ```
 
 ---
@@ -269,6 +270,8 @@ Users should always know:
 - where they are
 - how to go back
 - what section they opened
+
+Use clear "Destination Tabs" instead of complex swiping or multiple nested tabs.
 
 ---
 

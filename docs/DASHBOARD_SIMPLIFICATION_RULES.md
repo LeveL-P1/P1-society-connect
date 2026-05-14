@@ -26,6 +26,8 @@ especially for:
 
 # Core Philosophy
 
+Before simplifying, always Deconstruct & Audit the existing Information Architecture (IA) to find and remove "khichdi" (clutter).
+
 The dashboard is NOT:
 ```txt
 a data analytics platform
@@ -118,6 +120,7 @@ Resident dashboard should ideally stay under:
 Admins can handle:
 - more information
 - operational visibility
+- house hierarchies and relationship mapping (too complex for mobile)
 
 But still avoid:
 - chaos

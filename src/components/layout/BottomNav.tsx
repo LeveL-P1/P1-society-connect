@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   Receipt,
@@ -59,16 +60,14 @@ export default function BottomNav({ userRole = "member" }: BottomNavProps) {
   return (
     <nav
       aria-label="Main navigation"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-border pb-safe"
-      style={{ boxShadow: "0 -1px 12px rgba(0,0,0,0.07)" }}
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-100 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
     >
       <div
-        className="flex justify-around items-stretch px-1"
+        className="flex justify-around items-stretch px-2"
         style={{ height: "64px" }}
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          /* match /dashboard exactly, all others use startsWith */
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -80,39 +79,36 @@ export default function BottomNav({ userRole = "member" }: BottomNavProps) {
               href={item.href}
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
-              className="flex flex-col items-center justify-center flex-1 gap-1 relative transition-colors"
+              className="flex flex-col items-center justify-center flex-1 relative transition-all duration-300"
               style={{
                 minHeight: "44px",
                 WebkitTapHighlightColor: "transparent",
-                color: isActive
-                  ? "var(--color-primary)"
-                  : "var(--color-text-tertiary)",
+                color: isActive ? "#E11D48" : "#64748B", // Rose-600 for active, Slate-500 for inactive
               }}
             >
-              {/* Active indicator pill */}
+              {/* Top Active Indicator Line (like inspiration) */}
               {isActive && (
-                <span
-                  className="absolute top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary/10"
-                  style={{ width: "36px", height: "30px" }}
-                  aria-hidden="true"
+                <motion.div
+                  layoutId="bottomNavIndicator"
+                  className="absolute top-0 w-8 h-[3px] bg-rose-600 rounded-b-full"
                 />
               )}
+              
               <Icon
-                className="relative z-10 transition-transform"
+                className="relative z-10 transition-transform mb-1"
                 style={{
-                  width: "22px",
-                  height: "22px",
-                  strokeWidth: isActive ? 2.5 : 1.75,
-                  transform: isActive ? "scale(1.08)" : "scale(1)",
+                  width: "24px",
+                  height: "24px",
+                  strokeWidth: isActive ? 2.5 : 2,
+                  transform: isActive ? "scale(1.1) translateY(2px)" : "scale(1) translateY(0)",
                 }}
               />
               <span
-                className="relative z-10"
+                className="relative z-10 transition-all"
                 style={{
                   fontSize: "10px",
                   fontWeight: isActive ? 700 : 500,
-                  lineHeight: 1,
-                  letterSpacing: "0.01em",
+                  opacity: isActive ? 1 : 0.8,
                 }}
               >
                 {item.label}

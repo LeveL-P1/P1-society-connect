@@ -46,6 +46,7 @@ import {
 import { useLiveData } from "@/lib/use-live-data";
 import { useUser } from "@/lib/user-context";
 import { formatCurrency } from "@/lib/utils";
+import ResidentDashboard from "./ResidentDashboard";
 
 interface DashboardData {
   totalCollected: number;
@@ -282,6 +283,10 @@ export default function DashboardPage() {
     if (hour < 17) return "Good Afternoon";
     return "Good Evening";
   };
+
+  if (!isAdmin && loaded) {
+    return <ResidentDashboard user={user} data={data} myBills={myBills} />;
+  }
 
   return (
     <div className="page-container !max-w-6xl pb-24">

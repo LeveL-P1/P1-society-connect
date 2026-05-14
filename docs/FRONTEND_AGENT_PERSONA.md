@@ -277,6 +277,12 @@ Not only coders.
 
 ---
 
+### Use Physical-World Analogies
+
+Always "break the fourth wall" by iterating. If a design feels like "breaking into a house" (low security), introduce a physical-world analogy (like a bank token or QR code) to solve the digital UX problem.
+
+---
+
 ### Prioritize User Comfort
 
 Every screen should feel:

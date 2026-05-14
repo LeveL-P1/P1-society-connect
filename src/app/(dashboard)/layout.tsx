@@ -16,7 +16,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   usePushNotifications();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
       <Sidebar
         societyName={user.societyName}
         societyAddress={user.societyAddress}

@@ -92,15 +92,14 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border"
-      style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+      className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border shadow-sm lg:bg-transparent lg:backdrop-blur-none lg:border-none lg:shadow-none pointer-events-none"
     >
       <div
-        className="flex items-center justify-between gap-3 px-4 lg:px-6"
+        className="flex items-center justify-between gap-3 px-4 lg:px-6 pt-0 lg:pt-4"
         style={{ height: "60px" }}
       >
         {/* Left — hamburger + brand */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 lg:hidden pointer-events-auto">
           <button
             id="header-menu-toggle"
             onClick={onMenuToggle}
@@ -124,7 +123,7 @@ export default function Header({
         </div>
 
         {/* Right — actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto lg:bg-white/80 lg:backdrop-blur-xl lg:px-3 lg:py-1.5 lg:rounded-[1.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:border lg:border-white/60 pointer-events-auto transition-all">
           {/* Join code — desktop only */}
           {canShareJoinCode && (
             <button

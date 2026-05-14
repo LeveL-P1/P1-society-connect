@@ -25,6 +25,20 @@ This file acts as the UX decision-making source for all frontend/UI AI agents.
 
 ---
 
+# Deconstruction & Audit Philosophy
+
+Before designing, always deconstruct the current Information Architecture (IA) to find "khichdi" (clutter) and remove it. Validate assumptions with actual users.
+
+---
+
+# Logic & Security Philosophy
+
+1. **Security & Trust**: Onboarding must feel secure. Implement a "House Head" model to manage permissions and house hierarchies.
+2. **Tokenization**: Use unique codes or QR systems (like a physical bank token) for physical actions (gate entry, clubhouse access) to bridge digital UX with the physical world.
+3. **Social Friction**: Reduce login friction using social logins while maintaining a strict "management-verified" backend.
+
+---
+
 # Core Product Philosophy
 
 The platform should feel like:
@@ -188,8 +202,19 @@ Admins can handle:
 - operational management
 
 Even then:
-- prioritize clarity
 - avoid clutter
+
+---
+
+# Desktop / Web-App Philosophy
+
+Use the larger screen real estate to show:
+- House hierarchies
+- Relationship mapping (e.g., mapping flatmates/roommates)
+- Categorical feeds for forum/community pages (a simple list doesn't work on larger screens; it needs a structure that "binds" members together virtually).
+- Marketplace Optimization focusing on clear representation.
+
+This complex relationship mapping is too cluttered for mobile, so it belongs on desktop.
 
 ---
 

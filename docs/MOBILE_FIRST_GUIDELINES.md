@@ -75,9 +75,11 @@ Profile
 Keep:
 - icons simple
 - labels clear
+- navigation based on clear "Destination Tabs"
 
 Avoid:
-- too many tabs
+- complex swiping
+- multiple tabs
 - nested navigation
 
 ---
@@ -176,6 +178,30 @@ Simple.
 ---
 
 # Dashboard Rules
+
+# Utility Mindset & Contactless Flow
+
+# The "Utility" Mindset
+
+Mobile apps must be utilitarian. Group different typologies together so users can perform actions (like approving a visitor) in the "least frustrating way possible."
+
+---
+
+# Contactless Transitions
+
+Prioritize:
+- QR codes
+- Digital logs
+
+to replace manual, time-consuming entries.
+
+---
+
+# Notification Design
+
+Mobile users need a dedicated "News Feed" or notification section to stay updated on real-time events, with better logos and labels to ensure they don't miss key data points while on the go.
+
+---
 
 # Mobile Dashboard Must Stay Minimal
 

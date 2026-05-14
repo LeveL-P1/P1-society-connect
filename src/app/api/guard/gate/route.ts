@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
           ? (await prisma.user.findMany({
               where: { flatId: flat.id, role: { in: ["member", "tenant"] } },
               select: { id: true },
-            })).map((user) => user.id)
+            })).map((user: any) => user.id)
           : [];
 
       if (flatUserIds.length) {

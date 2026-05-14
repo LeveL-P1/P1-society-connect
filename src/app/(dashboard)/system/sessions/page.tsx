@@ -95,7 +95,7 @@ export default async function SessionsPage() {
                   <p className="text-slate-500">No active sessions found.</p>
                 </div>
               ) : (
-                sessions.map((sess) => {
+                sessions.map((sess: any) => {
                   const isCurrent = sess.token === currentToken;
                   return (
                     <div 

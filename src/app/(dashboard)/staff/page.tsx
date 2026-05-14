@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
-import { Plus, Users, Clock, Phone, Search, X, CheckCircle, LogOut as LogOutIcon, Briefcase } from "lucide-react";
-
+import { Plus, Users, Clock, Phone, Search, X, CheckCircle, Briefcase, MapPin, ArrowRight, UserPlus } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
 
 interface StaffMember {
   id: string;
@@ -22,14 +22,14 @@ interface Flat {
   wing: string | null;
 }
 
-const categoryStyles: Record<string, { bg: string; text: string; label: string }> = {
-  maid: { bg: "bg-pink-500/5", text: "text-pink-600", label: "Maid" },
-  cook: { bg: "bg-orange-500/5", text: "text-orange-600", label: "Cook" },
-  driver: { bg: "bg-blue-500/5", text: "text-blue-600", label: "Driver" },
-  nanny: { bg: "bg-purple-500/5", text: "text-purple-600", label: "Nanny" },
-  gardener: { bg: "bg-emerald-500/5", text: "text-emerald-600", label: "Gardener" },
-  watchman: { bg: "bg-amber-500/5", text: "text-amber-600", label: "Watchman" },
-  other: { bg: "bg-gray-500/5", text: "text-gray-600", label: "Other" },
+const categoryStyles: Record<string, { bg: string; text: string; label: string; icon: any }> = {
+  maid: { bg: "bg-rose-50 dark:bg-rose-900/10", text: "text-rose-600 dark:text-rose-400", label: "Maid", icon: Users },
+  cook: { bg: "bg-orange-50 dark:bg-orange-900/10", text: "text-orange-600 dark:text-orange-400", label: "Cook", icon: Users },
+  driver: { bg: "bg-blue-50 dark:bg-blue-900/10", text: "text-blue-600 dark:text-blue-400", label: "Driver", icon: Users },
+  nanny: { bg: "bg-purple-50 dark:bg-purple-900/10", text: "text-purple-600 dark:text-purple-400", label: "Nanny", icon: Users },
+  gardener: { bg: "bg-emerald-50 dark:bg-emerald-900/10", text: "text-emerald-600 dark:text-emerald-400", label: "Gardener", icon: Users },
+  watchman: { bg: "bg-amber-50 dark:bg-amber-900/10", text: "text-amber-600 dark:text-amber-400", label: "Watchman", icon: Users },
+  other: { bg: "bg-slate-50 dark:bg-slate-900/10", text: "text-slate-600 dark:text-slate-400", label: "Other", icon: Briefcase },
 };
 
 export default function StaffPage() {
@@ -130,220 +130,271 @@ export default function StaffPage() {
       s.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  const activeCount = staff.filter((s) => s.isActive).length;
-
   return (
-    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0 pb-20">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-500/5 flex items-center justify-center text-pink-600 shadow-sm border border-pink-500/5">
-            <Briefcase className="w-6 h-6 sm:w-8 sm:h-8" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight leading-none sm:leading-normal">
-              Staff & Daily Help
-            </h1>
-            <p className="text-xs sm:text-sm text-text-secondary mt-1 font-medium">
-              Register & track domestic staff attendance
-            </p>
-          </div>
+    <div className="page-container">
+      {/* Header Section */}
+      <div className="page-header">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Staff & Daily Help</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
+            Manage and track domestic help attendance
+          </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="btn btn-primary !rounded-xl px-5 sm:px-8 py-2.5 sm:py-3 font-bold text-xs sm:text-sm shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center"
+          className="btn btn-primary w-full sm:w-auto"
         >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Register Staff
+          <Plus className="w-5 h-5 mr-2" />
+          Register Staff
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-        {[
-          { label: "REGISTERED", val: staff.length, color: "text-primary", bg: "bg-primary/5", icon: Users },
-          { label: "ACTIVE", val: activeCount, color: "text-emerald-600", bg: "bg-emerald-50", icon: CheckCircle },
-          { label: "CATEGORIES", val: new Set(staff.map((s) => s.category)).size, color: "text-purple-600", bg: "bg-purple-50", icon: Briefcase },
-        ].map((s) => (
-          <div key={s.label} className="bg-white p-4 sm:p-6 rounded-2xl border border-border/50 group transition-all hover:border-primary/20 hover:shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${s.bg} flex items-center justify-center ${s.color} transition-transform group-hover:scale-110`}>
-                <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <p className={`text-xl sm:text-2xl font-bold ${s.color}`}>{s.val}</p>
-            </div>
-            <p className="text-[9px] sm:text-[10px] font-bold text-text-tertiary mt-4 tracking-[0.1em] uppercase">{s.label}</p>
+      {/* Search & Filter Section */}
+      <div className="mb-6 relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by name, phone or category..."
+          className="input pl-12"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Staff Grid */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
-        ))}
-      </div>
-
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
-        <h3 className="text-base sm:text-lg font-bold text-text-primary flex items-center gap-2">
-          <Clock className="w-5 h-5 text-text-tertiary" /> Staff Directory
-        </h3>
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
-          <input
-            className="input !rounded-xl !bg-surface/50 !border-border/60 !pl-11 pr-4 py-2.5 text-xs sm:text-sm font-semibold w-full"
-            placeholder="Search staff..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Staff List */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="spinner !w-8 !h-8" />
-          <p className="text-[10px] font-bold text-text-secondary tracking-widest uppercase">Loading staff...</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="card text-center py-24 bg-surface/30 border-dashed border-2">
-          <Briefcase className="w-10 h-10 text-text-tertiary mx-auto mb-4 opacity-20" />
-          <p className="text-text-primary font-bold">No staff registered yet</p>
-          <p className="text-xs text-text-secondary mt-1">Register maids, cooks, drivers to start tracking attendance</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {filtered.map((s) => {
-            const style = categoryStyles[s.category] || categoryStyles.other;
-            return (
-              <div key={s.id} className="bg-white rounded-[1.25rem] border border-border/60 p-5 sm:p-6 transition-all hover:shadow-md hover:border-primary/20 group">
-                <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-2xl ${style.bg} flex items-center justify-center ${style.text} shrink-0`}>
-                    <Briefcase className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h4 className="text-base font-bold text-text-primary tracking-tight">{s.name}</h4>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
-                        {style.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-text-secondary">
-                        <Phone className="w-3 h-3" /> {s.phone}
-                      </span>
-                    </div>
-                    {s.flatLinks.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {s.flatLinks.map((fl, i) => (
-                          <span key={i} className="text-[10px] font-bold bg-surface px-2 py-0.5 rounded-full text-text-secondary">
-                            {fl.flat.wing ? `${fl.flat.wing}-` : ""}{fl.flat.flatNumber}
-                            {fl.agreedMonthlyPay ? ` · ${formatCurrency(fl.agreedMonthlyPay)}/mo` : ""}
-                          </span>
-                        ))}
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">No staff found</h3>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-2">
+              {search ? "No staff matches your search criteria." : "Register your domestic help to track their entry and attendance."}
+            </p>
+            {search && (
+              <button 
+                onClick={() => setSearch("")}
+                className="mt-4 text-primary font-semibold text-sm"
+              >
+                Clear search
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filtered.map((s) => {
+              const style = categoryStyles[s.category] || categoryStyles.other;
+              const CategoryIcon = style.icon;
+              
+              return (
+                <div key={s.id} className="card p-5 flex flex-col gap-5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-2xl ${style.bg} ${style.text} flex items-center justify-center`}>
+                        <CategoryIcon className="w-7 h-7" />
                       </div>
-                    )}
-                    {s.entryCode && (
-                      <p className="text-[10px] font-mono font-bold text-primary mt-2 bg-primary/5 px-2 py-1 rounded-lg inline-block">
-                        Gate Code: {s.entryCode}
-                      </p>
-                    )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-slate-900 dark:text-white text-lg">
+                            {s.name}
+                          </h3>
+                          {s.isActive && (
+                            <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
+                            {style.label}
+                          </span>
+                          • {s.phone}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {s.flatLinks.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {s.flatLinks.map((link, idx) => (
+                        <div 
+                          key={idx}
+                          className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                            {link.flat.wing ? `${link.flat.wing}-` : ""}{link.flat.flatNumber}
+                          </span>
+                          {link.agreedMonthlyPay && (
+                            <span className="text-[10px] font-bold text-primary ml-1">
+                              {formatCurrency(link.agreedMonthlyPay)}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {s.entryCode && (
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl flex items-center justify-between border border-indigo-100 dark:border-indigo-800/50">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                          <Clock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                          Gate Access Code
+                        </span>
+                      </div>
+                      <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tracking-widest font-mono">
+                        {s.entryCode}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => markAttendance(s.id)}
+                      disabled={marking === s.id}
+                      className="btn btn-secondary w-full"
+                    >
+                      {marking === s.id ? (
+                        <div className="spinner !w-4 !h-4" />
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Mark Attendance
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-border/40 flex gap-2">
-                  <button
-                    onClick={() => markAttendance(s.id)}
-                    disabled={marking === s.id}
-                    className="flex-1 btn btn-primary !rounded-xl !py-2.5 text-[10px] sm:text-xs font-bold flex items-center justify-center gap-2"
-                  >
-                    {marking === s.id ? (
-                      "Recording..."
-                    ) : (
-                      <>
-                        <CheckCircle className="w-3.5 h-3.5" /> Check In / Out
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Add Staff Modal */}
       {showForm && (
-        <div className="modal-overlay !bg-black/60 backdrop-blur-sm z-[100]" onClick={() => setShowForm(false)}>
-          <div className="bg-white w-full max-w-xl sm:rounded-[2rem] h-full sm:h-auto overflow-y-auto !p-6 sm:!p-10 shadow-2xl animate-in fade-in zoom-in-95 duration-300 relative" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-pink-500 flex items-center justify-center text-white shadow-lg shadow-pink-500/20">
-                  <Briefcase className="w-6 h-6" />
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+            
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                  <UserPlus className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-text-primary tracking-tight">Register Staff</h3>
-                  <p className="text-xs font-medium text-text-secondary mt-0.5">Add domestic help or society staff</p>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Register Staff</h2>
+                  <p className="text-sm text-slate-500">Add domestic help or society staff</p>
                 </div>
               </div>
-              <button onClick={() => setShowForm(false)} className="p-2 rounded-full hover:bg-surface text-text-tertiary"><X className="w-6 h-6" /></button>
+              <button 
+                onClick={() => setShowForm(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-slate-400" />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 pb-20 sm:pb-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Name *</label>
-                  <input className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5" placeholder="Staff name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
+                  <input 
+                    className="input" 
+                    placeholder="Enter staff name" 
+                    value={form.name} 
+                    onChange={(e) => setForm({ ...form, name: e.target.value })} 
+                    required 
+                  />
                 </div>
+                
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Phone *</label>
-                  <input className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5" placeholder="+91 00000 00000" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Phone Number</label>
+                  <input 
+                    className="input" 
+                    placeholder="+91 00000 00000" 
+                    value={form.phone} 
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })} 
+                    required 
+                  />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Category *</label>
-                <select className="select !rounded-xl !bg-surface font-bold text-sm py-3.5 px-4 w-full" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                  <option value="maid">Maid</option>
-                  <option value="cook">Cook</option>
-                  <option value="driver">Driver</option>
-                  <option value="nanny">Nanny</option>
-                  <option value="gardener">Gardener</option>
-                  <option value="watchman">Watchman</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Category</label>
+                    <select 
+                      className="select" 
+                      value={form.category} 
+                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    >
+                      <option value="maid">Maid</option>
+                      <option value="cook">Cook</option>
+                      <option value="driver">Driver</option>
+                      <option value="nanny">Nanny</option>
+                      <option value="gardener">Gardener</option>
+                      <option value="watchman">Watchman</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Pre-agreed Monthly Amount</label>
-                <input
-                  type="number"
-                  min="0"
-                  className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5"
-                  placeholder="e.g. 2500"
-                  value={form.agreedMonthlyPay}
-                  onChange={(e) => setForm({ ...form, agreedMonthlyPay: e.target.value })}
-                />
-                <p className="text-[10px] text-text-secondary ml-1">Used to prefill private staff payments in My Bills. This is not society payroll.</p>
-              </div>
-
-              {flats.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Linked Flats</label>
-                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-3 bg-surface/50 rounded-xl border border-border/40">
-                    {flats.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => toggleFlatSelection(f.id)}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                          form.flatIds.includes(f.id)
-                            ? "bg-primary text-white shadow-sm"
-                            : "bg-white text-text-secondary border border-border/60 hover:border-primary/40"
-                        }`}
-                      >
-                        {f.wing ? `${f.wing}-` : ""}{f.flatNumber}
-                      </button>
-                    ))}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Monthly Pay (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="input"
+                      placeholder="e.g. 2500"
+                      value={form.agreedMonthlyPay}
+                      onChange={(e) => setForm({ ...form, agreedMonthlyPay: e.target.value })}
+                    />
                   </div>
                 </div>
-              )}
 
-              <div className="flex gap-3 pt-6 sticky bottom-0 bg-white sm:static">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 btn btn-secondary !rounded-xl py-4 font-bold text-sm">Cancel</button>
-                <button type="submit" disabled={saving} className="flex-[2] btn btn-primary !rounded-xl py-4 font-bold text-sm shadow-xl shadow-primary/20">
+                {flats.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Link to Flats</label>
+                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                      {flats.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => toggleFlatSelection(f.id)}
+                          className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all border ${
+                            form.flatIds.includes(f.id)
+                              ? "bg-primary text-white border-primary shadow-lg shadow-primary/20"
+                              : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-primary/50"
+                          }`}
+                        >
+                          {f.wing ? `${f.wing}-` : ""}{f.flatNumber}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowForm(false)} 
+                  className="flex-1 btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={saving} 
+                  className="flex-[2] btn btn-primary shadow-xl shadow-primary/20"
+                >
                   {saving ? "Registering..." : "Register Staff"}
                 </button>
               </div>

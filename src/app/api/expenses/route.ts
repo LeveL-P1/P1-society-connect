@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     orderBy: { paidOn: "desc" },
   });
 
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
+  const total = expenses.reduce((s: number, e: any) => s + e.amount, 0);
 
   return Response.json({ expenses, total });
 }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     const expenseDate = new Date(paidOn);
-    const expense = await prisma.$transaction(async (tx) => {
+    const expense = await prisma.$transaction(async (tx: any) => {
       const created = await tx.expense.create({
         data: {
           societyId: session!.societyId,

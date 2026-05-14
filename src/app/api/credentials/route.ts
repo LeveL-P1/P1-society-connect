@@ -153,10 +153,10 @@ export async function GET() {
 
     // Group by role
     const grouped = {
-      admins: users.filter((u) => ["chairman", "secretary", "treasurer"].includes(u.role)),
-      members: users.filter((u) => u.role === "member"),
-      tenants: users.filter((u) => u.role === "tenant"),
-      guards: users.filter((u) => u.role === "guard"),
+      admins: users.filter((u: any) => ["chairman", "secretary", "treasurer"].includes(u.role)),
+      members: users.filter((u: any) => u.role === "member"),
+      tenants: users.filter((u: any) => u.role === "tenant"),
+      guards: users.filter((u: any) => u.role === "guard"),
       total: users.length,
       joinCode: society?.joinCode || null,
     };

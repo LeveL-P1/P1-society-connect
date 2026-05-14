@@ -129,14 +129,14 @@ export async function POST(request: NextRequest) {
       select: { relationshipType: true, isPrimaryOccupant: true },
     });
 
-    if (requestedRelationship === "OWNER" && activeRelationships.some((item) => item.relationshipType === "OWNER")) {
+    if (requestedRelationship === "OWNER" && activeRelationships.some((item: any) => item.relationshipType === "OWNER")) {
       return Response.json(
         { error: "This unit already has a primary owner. Use Co-owner or Family Member if applicable." },
         { status: 400 }
       );
     }
 
-    if (requestedRelationship === "TENANT" && activeRelationships.some((item) => item.relationshipType === "TENANT")) {
+    if (requestedRelationship === "TENANT" && activeRelationships.some((item: any) => item.relationshipType === "TENANT")) {
       return Response.json({ error: "This unit already has an active tenant" }, { status: 400 });
     }
 
@@ -150,9 +150,9 @@ export async function POST(request: NextRequest) {
     const shouldBePrimary =
       typeof isPrimaryOccupant === "boolean"
         ? isPrimaryOccupant
-        : !activeRelationships.some((item) => item.isPrimaryOccupant);
+        : !activeRelationships.some((item: any) => item.isPrimaryOccupant);
 
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx: any) => {
       const person = await tx.person.create({
         data: {
           societyId: society.id,

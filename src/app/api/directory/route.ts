@@ -39,7 +39,7 @@ export async function GET() {
     // Apply privacy filters - members only see what's allowed
     const isAdmin = ["chairman", "secretary", "treasurer"].includes(session!.role);
 
-    const directory = flats.map((flat) => ({
+    const directory = flats.map((flat: any) => ({
       flatNumber: flat.flatNumber,
       wing: flat.wing,
       floor: flat.floor,
@@ -51,15 +51,15 @@ export async function GET() {
       // Show contact only if admin OR user opted in
       contact: isAdmin
         ? flat.contact
-        : flat.users.some((u) => u.showPhoneInDirectory)
+        : flat.users.some((u: any) => u.showPhoneInDirectory)
         ? flat.contact
         : null,
       email: isAdmin
         ? flat.email
-        : flat.users.some((u) => u.showEmailInDirectory)
+        : flat.users.some((u: any) => u.showEmailInDirectory)
         ? flat.email
         : null,
-      members: flat.users.map((u) => ({
+      members: flat.users.map((u: any) => ({
         name: u.name,
         role: u.role,
         phone: isAdmin || u.showPhoneInDirectory ? u.phone : null,
@@ -68,10 +68,10 @@ export async function GET() {
     }));
 
     // Group by wing
-    const wings = [...new Set(flats.map((f) => f.wing || "General"))];
+    const wings: string[] = Array.from(new Set(flats.map((f: any) => String(f.wing || "General"))));
     const grouped: Record<string, typeof directory> = {};
     for (const wing of wings) {
-      grouped[wing] = directory.filter((f) => (f.wing || "General") === wing);
+      grouped[wing] = directory.filter((f: any) => (f.wing || "General") === wing);
     }
 
     return Response.json({

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/auth";
 import { generateJoinCode } from "@/lib/join-code";
-import { Prisma } from "@prisma/client";
+
 import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Chairman-only SaaS onboarding: one society is created here, residents join later by code.
-    const { user, society } = await prisma.$transaction(async (tx) => {
+    const { user, society } = await prisma.$transaction(async (tx: any) => {
       let joinCode = generateJoinCode(societyName);
       for (let attempt = 0; attempt < 5; attempt++) {
         const existingCode = await tx.society.findUnique({ where: { joinCode } });
@@ -85,11 +85,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("Register Error:", error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        const target = Array.isArray(error.meta?.target)
-          ? error.meta.target.join(", ")
-          : String(error.meta?.target || "");
+    const prismaError = error as any;
+    if (prismaError.code) {
+      if (prismaError.code === "P2002") {
+        const target = Array.isArray(prismaError.meta?.target)
+          ? prismaError.meta.target.join(", ")
+          : String(prismaError.meta?.target || "");
         if (target.includes("email")) {
           return Response.json({ error: "Email already registered" }, { status: 400 });
         }
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      if (error.code === "P2022") {
+      if (prismaError.code === "P2022") {
         return Response.json(
           { error: "Database is not synced. Please run Prisma db push and try again." },
           { status: 500 }

@@ -16,9 +16,9 @@ export async function GET() {
   });
 
   const stats = {
-    open: complaints.filter((c) => c.status === "open").length,
-    inProgress: complaints.filter((c) => c.status === "in_progress").length,
-    resolved: complaints.filter((c) => c.status === "resolved" || c.status === "closed").length,
+    open: complaints.filter((c: any) => c.status === "open").length,
+    inProgress: complaints.filter((c: any) => c.status === "in_progress").length,
+    resolved: complaints.filter((c: any) => c.status === "resolved" || c.status === "closed").length,
     total: complaints.length,
   };
 

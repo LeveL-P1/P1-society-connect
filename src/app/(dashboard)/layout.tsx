@@ -32,7 +32,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           joinCode={user.joinCode}
           onMenuToggle={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6" style={{ paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" }} >{children}</main>
       </div>
       <BottomNav userRole={user.role} />
       <LegalAdviserCall />

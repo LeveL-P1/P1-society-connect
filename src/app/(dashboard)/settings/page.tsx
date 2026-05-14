@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Settings as SettingsIcon, Save, Shield, Building2, Home, Copy, Plus, RefreshCw, UserCheck, Mail, Phone, X } from "lucide-react";
+import { 
+  Settings as SettingsIcon, Save, Shield, Building2, 
+  Home, Copy, Plus, RefreshCw, UserCheck, Mail, 
+  Phone, X, CreditCard, Landmark, ShieldCheck,
+  User, CheckCircle2, AlertTriangle, KeyRound, ArrowRight
+} from "lucide-react";
 
 interface FlatLinkedUser {
   id: string;
@@ -47,6 +52,7 @@ export default function SettingsPage() {
   const [guards, setGuards] = useState<GuardItem[]>([]);
   const [guardsLoading, setGuardsLoading] = useState(false);
   const [guardSaving, setGuardSaving] = useState(false);
+  
   const [flatSetup, setFlatSetup] = useState({
     wings: "A",
     floors: "1,2,3,4",
@@ -145,7 +151,7 @@ export default function SettingsPage() {
   const copyJoinCode = () => {
     if (!joinCode) return;
     navigator.clipboard.writeText(joinCode);
-    toast.success("Join code copied");
+    toast.success("Join code copied to clipboard!");
   };
 
   const createFlats = async () => {
@@ -158,10 +164,10 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Created ${data.created} flats${data.skipped ? `, skipped ${data.skipped}` : ""}`);
+        toast.success(`Generated ${data.created} units`);
         fetchFlats();
       } else {
-        toast.error(data.error || "Failed to create flats");
+        toast.error(data.error || "Generation failed");
       }
     } catch {
       toast.error("Something went wrong");
@@ -180,14 +186,14 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.loginCredentials ? `Guard created. Temporary login: ${data.loginCredentials.email}` : "Guard created");
+        toast.success("Security staff record created");
         setGuardForm({ name: "", phone: "", pin: "", gateAssignment: "", shiftStart: "", shiftEnd: "" });
         fetchGuards();
       } else {
-        toast.error(data.error || "Failed to create guard");
+        toast.error(data.error || "Failed to create staff record");
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Network error");
     } finally {
       setGuardSaving(false);
     }
@@ -201,456 +207,361 @@ export default function SettingsPage() {
         body: JSON.stringify({ guardId, isActive }),
       });
       if (res.ok) {
-        toast.success(isActive ? "Guard approved" : "Guard paused");
+        toast.success(isActive ? "Access granted" : "Access revoked");
         fetchGuards();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to update guard");
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Update failed");
     }
-  };
-
-  const previewFlats = () => {
-    const wings = flatSetup.wings.split(",").map((w) => w.trim().toUpperCase()).filter(Boolean);
-    const floors = flatSetup.floors.split(",").map((f) => Number(f.trim())).filter(Number.isFinite);
-    const count = Number(flatSetup.flatsPerFloor || 0);
-    const preview: string[] = [];
-    for (const wing of wings.slice(0, 2)) {
-      for (const floor of floors.slice(0, 2)) {
-        for (let unit = 1; unit <= Math.min(count, 4); unit++) {
-          preview.push(`${wing}-${floor}${String(unit).padStart(2, "0")}`);
-        }
-      }
-    }
-    return preview;
   };
 
   if (loading) {
-    return <div className="flex justify-center py-12"><div className="spinner" /></div>;
+    return <div className="page-container flex flex-col items-center justify-center py-24 gap-4"><div className="spinner !w-8 !h-8" /><p className="text-xs font-black uppercase text-slate-400">Syncing Settings...</p></div>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="page-container max-w-4xl pb-24">
       <div className="page-header">
-        <div className="flex items-center gap-3">
-          <SettingsIcon className="w-6 h-6 text-primary" />
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-600 border border-slate-200 dark:border-slate-800">
+            <SettingsIcon className="w-6 h-6" />
+          </div>
           <div>
-            <h1 className="page-title">Settings</h1>
-            <p className="text-sm text-text-secondary mt-0.5">
-              Configure society profile, flats, gate staff, and access
-            </p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Society Console</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Core configuration and infrastructure setup</p>
           </div>
         </div>
-        <button onClick={handleSave} disabled={saving} className="btn btn-primary btn-sm">
-          {saving ? <div className="spinner !w-4 !h-4 !border-white/30 !border-t-white" /> : <><Save className="w-4 h-4" /> Save Changes</>}
+        <button 
+          onClick={handleSave} 
+          disabled={saving} 
+          className="btn btn-primary !rounded-2xl shadow-xl shadow-primary/20"
+        >
+          {saving ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Commit Changes</>}
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-white border border-border rounded-lg p-0.5 mb-6 w-fit">
-        {([
-          { id: "profile" as const, label: "Society Profile", icon: Building2 },
-          { id: "flats" as const, label: "Flat Setup", icon: Home },
-          { id: "guards" as const, label: "Gate Staff", icon: UserCheck },
-          { id: "roles" as const, label: "Roles & Access", icon: Shield },
-        ]).map((t) => (
+      {/* Modern Tab Bar */}
+      <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-8 border-b border-slate-100 dark:border-slate-800">
+        {[
+          { id: "profile" as const, label: "Society Identity", icon: Building2 },
+          { id: "flats" as const, label: "Inventory Setup", icon: Home },
+          { id: "guards" as const, label: "Security Staff", icon: UserCheck },
+          { id: "roles" as const, label: "Access Policy", icon: Shield },
+        ].map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
-              tab === t.id ? "bg-primary text-white" : "text-text-secondary hover:text-text-primary"
+            className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border flex items-center gap-2 ${
+              tab === t.id 
+                ? "bg-slate-900 text-white border-slate-900 shadow-lg" 
+                : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-primary/40"
             }`}
           >
-            <t.icon className="w-4 h-4" />
+            <t.icon className="w-3.5 h-3.5" />
             {t.label}
           </button>
         ))}
       </div>
 
-      {tab === "profile" ? (
-        <div className="space-y-6">
-          {joinCode && (
-            <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-l-primary">
-              <div>
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Copy className="w-4 h-4 text-primary" />
-                  Society Join Code
-                </h3>
-                <p className="text-xs text-text-secondary mt-1">
-                  Share this only after flats are created. Residents will use it on /join.
-                </p>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          {tab === "profile" && (
+            <div className="space-y-8">
+              {joinCode && (
+                <div className="p-8 rounded-[2.5rem] bg-primary/5 border border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-6 group">
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-tighter">
+                      Society Key
+                    </h3>
+                    <p className="text-xs font-bold text-slate-500 mt-1">Share this with residents to let them join your society portal.</p>
+                  </div>
+                  <button 
+                    onClick={copyJoinCode} 
+                    className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-primary/20 shadow-sm flex items-center gap-6 group-hover:shadow-xl transition-all"
+                  >
+                    <span className="text-3xl font-black font-mono tracking-[0.2em] text-primary">{joinCode}</span>
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                      <Copy className="w-5 h-5" />
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              <div className="card !p-8">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Registration Details</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Official Name</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Registered Address</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">City</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Pincode</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="mt-12 pt-12 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Finance Hub</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Society UPI ID</label>
+                      <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" placeholder="society@upi" value={form.upiId} onChange={(e) => setForm({ ...form, upiId: e.target.value })} />
+                      <p className="text-[9px] font-bold text-slate-400 ml-1">Printed on receipts and used for My Bills QR payments.</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Bank Settlement Details</label>
+                      <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" placeholder="A/C No. & IFSC" value={form.bankDetails} onChange={(e) => setForm({ ...form, bankDetails: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button onClick={copyJoinCode} className="btn btn-secondary !font-mono !text-lg !font-black tracking-widest">
-                {joinCode}
-                <Copy className="w-4 h-4" />
-              </button>
             </div>
           )}
-          <div className="card">
-            <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-primary" />
-              Society Profile
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="label">Society Name *</label>
-                <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Full Address *</label>
-                <input className="input" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">City *</label>
-                  <input className="input" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
-                </div>
-                <div>
-                  <label className="label">Pincode *</label>
-                  <input className="input" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} />
-                </div>
-              </div>
-              <div className="border-t border-border pt-4 mt-4">
-                <h4 className="text-sm font-medium mb-3">Payment Details</h4>
-                <div className="space-y-3">
-                  <div>
-                    <label className="label">UPI ID</label>
-                    <input className="input" placeholder="yourname@upi" value={form.upiId} onChange={(e) => setForm({ ...form, upiId: e.target.value })} />
-                    <p className="text-xs text-text-secondary mt-1">Shown on receipts for easy payment</p>
+
+          {tab === "flats" && (
+            <div className="space-y-8">
+              <div className="card !p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary">
+                      <Home className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Unit Inventory</h3>
+                      <p className="text-xs font-bold text-slate-400">Generate the master list of all units</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="label">Bank Details</label>
-                    <input className="input" placeholder="Bank A/C & IFSC for NEFT" value={form.bankDetails} onChange={(e) => setForm({ ...form, bankDetails: e.target.value })} />
+                  <button onClick={fetchFlats} className="p-2 hover:bg-slate-100 rounded-xl transition-all">
+                    <RefreshCw className={`w-4 h-4 text-slate-400 ${flatsLoading ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Wings</label>
+                    <input className="input !bg-white dark:!bg-slate-800 font-bold" placeholder="A,B,C" value={flatSetup.wings} onChange={(e) => setFlatSetup({ ...flatSetup, wings: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Floors</label>
+                    <input className="input !bg-white dark:!bg-slate-800 font-bold" placeholder="1,2,3" value={flatSetup.floors} onChange={(e) => setFlatSetup({ ...flatSetup, floors: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Units/Floor</label>
+                    <input type="number" className="input !bg-white dark:!bg-slate-800 font-bold" value={flatSetup.flatsPerFloor} onChange={(e) => setFlatSetup({ ...flatSetup, flatsPerFloor: e.target.value })} />
                   </div>
                 </div>
-              </div>
-              <div className="border-t border-border pt-4 mt-4">
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-primary" />
-                  Legal Adviser Contact
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="label">Adviser Name</label>
-                    <input
-                      className="input"
-                      placeholder="Adv. Name"
-                      value={form.legalAdviserName}
-                      onChange={(e) => setForm({ ...form, legalAdviserName: e.target.value })}
-                    />
+
+                <div className="mt-8 flex items-center justify-between">
+                  <div className="flex gap-2">
+                    {flatSetup.wings.split(',').slice(0, 2).map((w, i) => (
+                      <span key={i} className="text-[10px] font-black text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">Preview {w.trim()}-101</span>
+                    ))}
                   </div>
-                  <div>
-                    <label className="label">Call Number</label>
-                    <input
-                      className="input"
-                      placeholder="+91..."
-                      value={form.legalAdviserPhone}
-                      onChange={(e) => setForm({ ...form, legalAdviserPhone: e.target.value })}
-                    />
-                  </div>
+                  <button onClick={createFlats} disabled={flatsSaving} className="btn btn-primary !rounded-2xl shadow-lg shadow-primary/20">
+                    {flatsSaving ? "Generating..." : "Generate Master List"}
+                  </button>
                 </div>
-                <p className="text-xs text-text-secondary mt-2">
-                  This appears as a floating call button for residents, committee members, and guards. It is only a click-to-call contact, not a chatbot.
-                </p>
               </div>
-            </div>
-          </div>
-        </div>
-      ) : tab === "flats" ? (
-        <div className="space-y-6">
-          <div className="card">
-            <div className="flex items-center justify-between gap-4 mb-5">
-              <div>
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Home className="w-4 h-4 text-primary" />
-                  Flat Inventory
-                </h3>
-                <p className="text-xs text-text-secondary mt-1">
-                  Create flats first, then share the join code with residents.
-                </p>
-              </div>
-              <button onClick={fetchFlats} className="btn btn-secondary btn-sm">
-                <RefreshCw className={`w-4 h-4 ${flatsLoading ? "animate-spin" : ""}`} />
-                Refresh
-              </button>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="label">Wings / Blocks</label>
-                <input className="input" placeholder="A,B,C or A1,A2" value={flatSetup.wings} onChange={(e) => setFlatSetup({ ...flatSetup, wings: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Floors</label>
-                <input className="input" placeholder="1,2,3,4" value={flatSetup.floors} onChange={(e) => setFlatSetup({ ...flatSetup, floors: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Flats Per Floor</label>
-                <input type="number" min="1" className="input" value={flatSetup.flatsPerFloor} onChange={(e) => setFlatSetup({ ...flatSetup, flatsPerFloor: e.target.value })} />
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 rounded-lg bg-surface border border-border">
-              <p className="text-xs font-semibold text-text-secondary mb-2">Preview</p>
-              <div className="flex flex-wrap gap-2">
-                {previewFlats().map((flat) => (
-                  <span key={flat} className="px-2 py-1 rounded-md bg-white border border-border text-xs font-bold text-text-primary">
-                    {flat}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <button onClick={createFlats} disabled={flatsSaving} className="btn btn-primary mt-4">
-              {flatsSaving ? <div className="spinner !w-4 !h-4 !border-white/30 !border-t-white" /> : <Plus className="w-4 h-4" />}
-              Create Missing Flats
-            </button>
-          </div>
-
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm">Current Flats</h3>
-              <span className="text-xs text-text-secondary">{flats.length} flats</span>
-            </div>
-            {flats.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-border rounded-xl">
-                <Home className="w-8 h-8 mx-auto text-text-tertiary opacity-40 mb-3" />
-                <p className="text-sm font-medium text-text-primary">No flats created yet</p>
-                <p className="text-xs text-text-secondary mt-1">Use the generator above to create the flat master.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {flats.map((flat) => (
                   <button
                     key={flat.id}
-                    type="button"
                     onClick={() => flat.hasAccount && setSelectedFlat(flat)}
-                    className={`rounded-lg border p-3 bg-white text-left transition-colors ${
-                      flat.hasAccount
-                        ? "border-primary/20 hover:border-primary hover:bg-primary/5 cursor-pointer"
-                        : "border-border cursor-default"
+                    className={`p-4 rounded-[2rem] border text-left transition-all ${
+                      flat.hasAccount 
+                        ? "bg-emerald-50 border-emerald-100 hover:shadow-lg hover:-translate-y-1" 
+                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60"
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-bold text-text-primary">{flat.flatNumber}</p>
-                        {flat.hasAccount ? (
-                          <>
-                            <p className="text-[11px] font-semibold text-text-primary mt-1 truncate">
-                              {flat.ownerName || flat.users[0]?.name || "Linked resident"}
-                            </p>
-                            <p className="text-[10px] text-text-secondary mt-0.5 truncate">
-                              {flat.contact || flat.users[0]?.phone || flat.users[0]?.email || "Contact not added"}
-                            </p>
-                          </>
-                        ) : (
-                          <p className="text-[10px] text-text-secondary mt-1">Available to join</p>
-                        )}
-                      </div>
-                      <span className={`text-[9px] font-bold px-2 py-1 rounded-full shrink-0 ${
-                        flat.hasAccount ? "bg-success-bg text-success" : "bg-surface text-text-secondary"
-                      }`}>
-                        {flat.hasAccount ? "Linked" : "Open"}
-                      </span>
+                    <p className={`text-xs font-black uppercase tracking-widest mb-1 ${flat.hasAccount ? "text-emerald-600" : "text-slate-400"}`}>
+                      {flat.wing || "Unit"}
+                    </p>
+                    <h4 className="text-xl font-black text-slate-900 dark:text-white leading-none mb-3">{flat.flatNumber}</h4>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${flat.hasAccount ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
+                      <span className="text-[9px] font-black uppercase text-slate-500">{flat.hasAccount ? "Occupied" : "Vacant"}</span>
                     </div>
                   </button>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      ) : tab === "guards" ? (
-        <div className="space-y-6">
-          <div className="card">
-            <div className="flex items-center justify-between gap-4 mb-5">
-              <div>
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-primary" />
-                  Gate Staff
-                </h3>
-                <p className="text-xs text-text-secondary mt-1">
-                  Optional for societies with guards. Guards can be created here or request access from /gate using the join code.
-                </p>
-              </div>
-              <button onClick={fetchGuards} className="btn btn-secondary btn-sm">
-                <RefreshCw className={`w-4 h-4 ${guardsLoading ? "animate-spin" : ""}`} />
-                Refresh
-              </button>
             </div>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="label">Guard Name</label>
-                <input className="input" value={guardForm.name} onChange={(e) => setGuardForm({ ...guardForm, name: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Phone</label>
-                <input className="input" maxLength={10} value={guardForm.phone} onChange={(e) => setGuardForm({ ...guardForm, phone: e.target.value.replace(/\D/g, "") })} />
-              </div>
-              <div>
-                <label className="label">4-digit PIN</label>
-                <input className="input" maxLength={4} value={guardForm.pin} onChange={(e) => setGuardForm({ ...guardForm, pin: e.target.value.replace(/\D/g, "") })} />
-              </div>
-              <div>
-                <label className="label">Gate / Duty Point</label>
-                <input className="input" placeholder="Main Gate" value={guardForm.gateAssignment} onChange={(e) => setGuardForm({ ...guardForm, gateAssignment: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Shift Start</label>
-                <input type="time" className="input" value={guardForm.shiftStart} onChange={(e) => setGuardForm({ ...guardForm, shiftStart: e.target.value })} />
-              </div>
-              <div>
-                <label className="label">Shift End</label>
-                <input type="time" className="input" value={guardForm.shiftEnd} onChange={(e) => setGuardForm({ ...guardForm, shiftEnd: e.target.value })} />
-              </div>
-            </div>
+          {tab === "guards" && (
+            <div className="space-y-8">
+              <div className="card !p-8">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">New Security Guard</h3>
+                </div>
 
-            <button onClick={createGuard} disabled={guardSaving} className="btn btn-primary mt-4">
-              {guardSaving ? <div className="spinner !w-4 !h-4 !border-white/30 !border-t-white" /> : <Plus className="w-4 h-4" />}
-              Create Guard
-            </button>
-          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={guardForm.name} onChange={(e) => setGuardForm({ ...guardForm, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Phone (10 Digits)</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" maxLength={10} value={guardForm.phone} onChange={(e) => setGuardForm({ ...guardForm, phone: e.target.value.replace(/\D/g, "") })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Shift Start</label>
+                    <input type="time" className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={guardForm.shiftStart} onChange={(e) => setGuardForm({ ...guardForm, shiftStart: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">4-Digit Access PIN</label>
+                    <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" maxLength={4} value={guardForm.pin} onChange={(e) => setGuardForm({ ...guardForm, pin: e.target.value.replace(/\D/g, "") })} />
+                  </div>
+                </div>
 
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm">Current Gate Staff</h3>
-              <span className="text-xs text-text-secondary">{guards.length} records</span>
-            </div>
-            {guards.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-border rounded-xl">
-                <UserCheck className="w-8 h-8 mx-auto text-text-tertiary opacity-40 mb-3" />
-                <p className="text-sm font-medium text-text-primary">No guards configured</p>
-                <p className="text-xs text-text-secondary mt-1">Small societies can leave this empty.</p>
+                <button onClick={createGuard} disabled={guardSaving} className="btn btn-primary h-14 w-full !rounded-2xl shadow-lg shadow-primary/20">
+                  {guardSaving ? "Creating Account..." : "Register Security Staff"}
+                </button>
               </div>
-            ) : (
-              <div className="space-y-3">
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 px-2">Active On-Duty Staff</h4>
                 {guards.map((guard) => (
-                  <div key={guard.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border p-4">
-                    <div>
-                      <p className="text-sm font-bold text-text-primary">{guard.name}</p>
-                      <p className="text-xs text-text-secondary mt-1">
-                        {guard.phone} · {guard.gateAssignment || "Gate not assigned"}
-                        {guard.shiftStart && guard.shiftEnd ? ` · ${guard.shiftStart}-${guard.shiftEnd}` : ""}
-                      </p>
+                  <div key={guard.id} className="card p-6 flex flex-col sm:flex-row items-center justify-between gap-6 group hover:border-primary/20 transition-all">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-all border border-slate-100 dark:border-slate-800">
+                        <User className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black text-slate-900 dark:text-white leading-tight">{guard.name}</h4>
+                        <p className="text-xs font-bold text-slate-400 mt-0.5">{guard.phone} · Gate: {guard.gateAssignment || "Not Set"}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${guard.isActive ? "bg-success-bg text-success-text" : "bg-warning-bg text-warning-text"}`}>
-                        {guard.isActive ? "Active" : "Pending / Paused"}
-                      </span>
-                      <button onClick={() => updateGuard(guard.id, !guard.isActive)} className="btn btn-secondary btn-sm">
-                        {guard.isActive ? "Pause" : "Approve"}
+                    <div className="flex items-center gap-4">
+                      <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${guard.isActive ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"}`}>
+                        {guard.isActive ? "Approved" : "Hold"}
+                      </div>
+                      <button 
+                        onClick={() => updateGuard(guard.id, !guard.isActive)} 
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${guard.isActive ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-emerald-50 text-emerald-600 border border-emerald-100"}`}
+                      >
+                        {guard.isActive ? <X className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="card">
-          <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-primary" />
-            Role Permissions
-          </h3>
-          <p className="text-sm text-text-secondary mb-4">
-            Each user has a role that determines what they can access. Roles are assigned during user registration.
-          </p>
-          <div className="table-wrapper !border-0">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Module</th>
-                  <th className="text-center">Chairman</th>
-                  <th className="text-center">Secretary</th>
-                  <th className="text-center">Treasurer</th>
-                  <th className="text-center">Member</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { module: "Dashboard", c: true, s: true, t: true, m: true },
-                  { module: "Members & Flats", c: true, s: true, t: true, m: false },
-                  { module: "Maintenance Bills", c: true, s: true, t: true, m: true },
-                  { module: "Expenses", c: true, s: false, t: true, m: false },
-                  { module: "Reports", c: true, s: true, t: true, m: false },
-                  { module: "Notices", c: true, s: true, t: true, m: true },
-                  { module: "Complaints", c: true, s: true, t: true, m: true },
-                  { module: "Reminders", c: true, s: true, t: true, m: false },
-                  { module: "Visitors", c: true, s: true, t: true, m: true },
-                  { module: "Parking", c: true, s: true, t: true, m: true },
-                  { module: "Facilities", c: true, s: true, t: true, m: true },
-                  { module: "Polls", c: true, s: true, t: true, m: true },
-                  { module: "Documents", c: true, s: true, t: true, m: true },
-                  { module: "Activity Log", c: true, s: true, t: true, m: false },
-                  { module: "Settings", c: true, s: false, t: false, m: false },
-                ].map(({ module, c, s, t, m }) => (
-                  <tr key={module}>
-                    <td className="font-medium text-sm">{module}</td>
-                    {[c, s, t, m].map((has, i) => (
-                      <td key={i} className="text-center">
-                        <span className={`inline-block w-5 h-5 rounded-full ${has ? "bg-success-bg text-success" : "bg-border text-text-secondary"} text-xs flex items-center justify-center mx-auto`}>
-                          {has ? "✓" : "–"}
-                        </span>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {selectedFlat && (
-        <div className="modal-overlay" onClick={() => setSelectedFlat(null)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-start justify-between gap-4 mb-5">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Flat Details</p>
-                <h3 className="text-xl font-black text-text-primary mt-1">{selectedFlat.flatNumber}</h3>
-                <p className="text-xs text-text-secondary mt-1">
-                  Wing {selectedFlat.wing || "-"} {selectedFlat.floor ? `· Floor ${selectedFlat.floor}` : ""}
-                </p>
+          {tab === "roles" && (
+            <div className="card !p-0 overflow-hidden">
+              <div className="p-8 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Access Matrix</h3>
+                <p className="text-xs font-bold text-slate-500 mt-1">Role-based permission architecture for the platform</p>
               </div>
-              <button onClick={() => setSelectedFlat(null)} className="p-2 rounded-lg hover:bg-surface text-text-secondary">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-900/50">
+                    <tr>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Application Module</th>
+                      {["CHAIRMAN", "SECRETARY", "TREASURER", "MEMBER"].map(r => (
+                        <th key={r} className="px-4 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">{r}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {[
+                      { module: "Dashboard & Core", c: true, s: true, t: true, m: true },
+                      { module: "Flat Inventory", c: true, s: true, t: true, m: false },
+                      { module: "Society Billing", c: true, s: true, t: true, m: true },
+                      { module: "Expense Ledger", c: true, s: false, t: true, m: false },
+                      { module: "Society Board", c: true, s: true, t: true, m: true },
+                      { module: "Resident Helpdesk", c: true, s: true, t: true, m: true },
+                      { module: "System Console", c: true, s: false, t: false, m: false },
+                    ].map((row, i) => (
+                      <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
+                        <td className="px-8 py-5 text-sm font-bold text-slate-700 dark:text-slate-300">{row.module}</td>
+                        {[row.c, row.s, row.t, row.m].map((has, j) => (
+                          <td key={j} className="px-4 py-5 text-center">
+                            <div className={`w-6 h-6 rounded-lg mx-auto flex items-center justify-center ${has ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-100 text-slate-300 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"}`}>
+                              {has ? <CheckCircle2 className="w-3.5 h-3.5" /> : <ArrowRight className="w-3 h-3 opacity-20" />}
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Flat Details Modal */}
+      {selectedFlat && (
+        <div className="modal-overlay z-[120]" onClick={() => setSelectedFlat(null)}>
+          <div className="modal-content !max-w-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
+                  <Home className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{selectedFlat.flatNumber}</h2>
+                  <p className="text-xs font-bold text-slate-500">Linked Account Details</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedFlat(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X className="w-6 h-6 text-slate-400" /></button>
             </div>
 
-            <div className="space-y-3">
-              {selectedFlat.users.length > 0 ? (
-                selectedFlat.users.map((resident) => (
-                  <div key={resident.id} className="rounded-xl border border-border p-4 bg-surface/40">
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                      <div>
-                        <p className="text-sm font-bold text-text-primary">{resident.name}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-primary">{resident.role}</p>
-                      </div>
-                      <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-success-bg text-success">
-                        Account linked
-                      </span>
+            <div className="space-y-4">
+              {selectedFlat.users.map((res) => (
+                <div key={res.id} className="p-6 rounded-[2rem] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{res.name}</p>
+                      <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5">{res.role}</p>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-text-secondary">
-                        <Mail className="w-4 h-4 text-text-tertiary" />
-                        <span className="font-medium text-text-primary break-all">{resident.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-text-secondary">
-                        <Phone className="w-4 h-4 text-text-tertiary" />
-                        <span className="font-medium text-text-primary">{resident.phone || "Phone not added"}</span>
-                      </div>
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
+                      <User className="w-5 h-5" />
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-dashed border-border p-6 text-center">
-                  <Home className="w-8 h-8 mx-auto text-text-tertiary opacity-40 mb-2" />
-                  <p className="text-sm font-medium text-text-primary">No account linked yet</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-400">
+                      <Mail className="w-4 h-4 opacity-50" /> {res.email}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-400">
+                      <Phone className="w-4 h-4 opacity-50" /> {res.phone || "No phone added"}
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>

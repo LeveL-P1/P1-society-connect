@@ -43,7 +43,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({ error: "Insufficient fund balance" }, { status: 400 });
   }
 
-  const transaction = await prisma.$transaction(async (tx) => {
+  const transaction = await prisma.$transaction(async (tx: any) => {
     const fundTransaction = await tx.fundTransaction.create({
       data: {
         fundId: id,

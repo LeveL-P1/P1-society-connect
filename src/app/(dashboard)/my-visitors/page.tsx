@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { UserCheck, Clock, Plus, Calendar, ShieldCheck, X, Phone, User, CheckCircle2, XCircle, Bell, ArrowDownLeft, ArrowUpRight, History } from "lucide-react";
+import {
+  UserCheck, Clock, Plus, Calendar, ShieldCheck, X,
+  Phone, User, CheckCircle2, XCircle, Bell, ArrowDownLeft,
+  ArrowUpRight, History, Copy,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Visitor {
@@ -20,13 +24,63 @@ interface Visitor {
   createdAt: string;
 }
 
-const purposeStyles: Record<string, { bg: string, text: string }> = {
-  delivery: { bg: "bg-orange-500/5", text: "text-orange-600" },
-  guest: { bg: "bg-blue-500/5", text: "text-blue-600" },
-  service: { bg: "bg-purple-500/5", text: "text-purple-600" },
-  cab: { bg: "bg-emerald-500/5", text: "text-emerald-600" },
-  other: { bg: "bg-gray-500/5", text: "text-gray-600" },
+const PURPOSE_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
+  delivery: { bg: "bg-orange-50", text: "text-orange-700", label: "Delivery"   },
+  guest:    { bg: "bg-blue-50",   text: "text-blue-700",   label: "Guest"      },
+  service:  { bg: "bg-purple-50", text: "text-purple-700", label: "Service"    },
+  cab:      { bg: "bg-emerald-50",text: "text-emerald-700",label: "Cab / Taxi" },
+  other:    { bg: "bg-slate-50",  text: "text-slate-600",  label: "Other"      },
 };
+
+const getPurpose = (key: string) => PURPOSE_CONFIG[key] ?? PURPOSE_CONFIG.other;
+
+function SkeletonCard() {
+  return (
+    <div className="card animate-shimmer space-y-3" style={{ minHeight: 100 }}>
+      <div className="flex gap-4 items-center">
+        <div className="skeleton rounded-xl flex-shrink-0" style={{ width: 44, height: 44 }} />
+        <div className="flex-1 space-y-2">
+          <div className="skeleton skeleton-title w-2/5" />
+          <div className="skeleton skeleton-text w-3/5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function statusLabel(v: Visitor): string {
+  if (v.status === "expected" && !v.residentResponse && !v.isPreApproved) return "Waiting at gate";
+  if (v.status === "expected" && v.residentResponse === "approved") return v.isPreApproved ? "Pre-approved" : "Entry approved";
+  if (v.status === "in")       return "Inside premises";
+  if (v.status === "out")      return "Visit completed";
+  if (v.status === "rejected") return "Entry denied";
+  return v.status;
+}
+
+function statusColor(v: Visitor): string {
+  if (v.status === "expected" && !v.residentResponse && !v.isPreApproved) return "text-amber-600";
+  if (v.status === "in")  return "text-emerald-600";
+  if (v.status === "out") return "text-slate-500";
+  if (v.status === "rejected") return "text-danger";
+  return "text-primary";
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return "--";
+  return new Date(value).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function formatTime(value?: string | null) {
+  if (!value) return "--";
+  return new Date(value).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}
+
+function visitDuration(entry?: string | null, exit?: string | null) {
+  if (!entry || !exit) return "";
+  const mins = Math.max(0, Math.round((new Date(exit).getTime() - new Date(entry).getTime()) / 60000));
+  if (mins < 60) return `${mins} min`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}m`;
+}
 
 export default function MyVisitorsPage() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -48,37 +102,27 @@ export default function MyVisitorsPage() {
     try {
       const res = await fetch(`/api/my-visitors${showHistory ? "?history=all" : ""}`);
       const data = await res.json();
-      if (data.visitors) {
-        setVisitors(data.visitors);
-      }
+      if (data.visitors) setVisitors(data.visitors);
     } catch {
-      toast.error("Failed to load visitors");
+      toast.error("Unable to load visitor log. Please try again.");
     } finally {
       setLoading(false);
     }
   }, [showHistory]);
 
-  useEffect(() => {
-    fetchVisitors();
-  }, [fetchVisitors]);
+  useEffect(() => { fetchVisitors(); }, [fetchVisitors]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const approve = params.get("approve");
-    if (approve) {
-      setHighlightId(approve);
-    }
+    if (approve) setHighlightId(approve);
   }, []);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.visitorName || !form.expectedAt) {
-      toast.error("Name and expected time are required");
-      return;
-    }
-
+    if (!form.visitorName.trim()) { toast.error("Please enter the visitor's name."); return; }
     setSaving(true);
-    const load = toast.loading("Issuing pre-approval...");
+    const tid = toast.loading("Creating pre-approval...");
     try {
       const res = await fetch("/api/my-visitors", {
         method: "POST",
@@ -86,53 +130,19 @@ export default function MyVisitorsPage() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
-        toast.success("Visitor pre-approved successfully", { id: load });
+        toast.success("Guest pre-approved. They can enter smoothly.", { id: tid });
         setShowForm(false);
         setForm({ visitorName: "", phone: "", purpose: "guest", expectedAt: new Date().toISOString().slice(0, 16) });
         fetchVisitors();
       } else {
         const d = await res.json();
-        toast.error(d.error || "Failed to add", { id: load });
+        toast.error(d.error ?? "Failed to create pre-approval.", { id: tid });
       }
     } catch {
-      toast.error("Something went wrong", { id: load });
+      toast.error("Something went wrong. Please try again.", { id: tid });
     } finally {
       setSaving(false);
     }
-  };
-
-  const formatDateTime = (value?: string | null) => {
-    if (!value) return "--";
-    return new Date(value).toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatTime = (value?: string | null) => {
-    if (!value) return "--";
-    return new Date(value).toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const visitDuration = (entry?: string | null, exit?: string | null) => {
-    if (!entry || !exit) return "";
-    const minutes = Math.max(0, Math.round((new Date(exit).getTime() - new Date(entry).getTime()) / 60000));
-    if (minutes < 60) return `${minutes} min`;
-    return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-  };
-
-  const statusLabel = (visitor: Visitor) => {
-    if (visitor.status === "expected" && !visitor.residentResponse && !visitor.isPreApproved) return "Waiting at gate";
-    if (visitor.status === "expected" && visitor.residentResponse === "approved") return visitor.isPreApproved ? "Pre-approved" : "Approved for entry";
-    if (visitor.status === "in") return "Inside premise";
-    if (visitor.status === "out") return "Visit completed";
-    if (visitor.status === "rejected") return "Rejected";
-    return visitor.status;
   };
 
   const handleApproval = async (visitorId: string, action: "approved" | "rejected") => {
@@ -145,221 +155,310 @@ export default function MyVisitorsPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message || (action === "approved" ? "Visitor approved" : "Visitor rejected"));
+        toast.success(data.message ?? (action === "approved" ? "Visitor approved for entry." : "Visitor entry denied."));
         fetchVisitors();
       } else {
-        toast.error(data.error || "Failed");
+        toast.error(data.error ?? "Action failed. Please try again.");
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Something went wrong.");
     } finally {
       setActionLoading(null);
     }
   };
 
+  /* Visitors needing approval shown first */
+  const sortedVisitors = [...visitors].sort((a, b) => {
+    const aNeedsAction = a.status === "expected" && !a.residentResponse && !a.isPreApproved;
+    const bNeedsAction = b.status === "expected" && !b.residentResponse && !b.isPreApproved;
+    return aNeedsAction === bNeedsAction ? 0 : aNeedsAction ? -1 : 1;
+  });
+
+  const pendingCount = visitors.filter(
+    (v) => v.status === "expected" && !v.residentResponse && !v.isPreApproved
+  ).length;
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0 pb-20">
-      {/* Header - Synchronized Clean Style */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary shadow-sm border border-primary/5 font-bold">
-            <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight leading-none sm:leading-normal">Expected Guests</h1>
-            <p className="text-xs sm:text-sm text-text-secondary mt-1 font-medium italic sm:not-italic">Pre-approve visitors for faster entry</p>
-          </div>
+    <div className="page-container max-w-2xl mx-auto space-y-5">
+      {/* Page header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">My Visitors</h1>
+          <p className="page-subtitle">
+            {pendingCount > 0
+              ? `${pendingCount} visitor${pendingCount > 1 ? "s" : ""} waiting for approval`
+              : "Pre-approve guests for faster entry"}
+          </p>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn btn-primary !rounded-xl px-6 sm:px-8 py-2.5 sm:py-3 font-bold text-sm shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center shrink-0">
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Pre-approve Guest
+        <button
+          id="pre-approve-btn"
+          onClick={() => setShowForm(true)}
+          className="btn btn-primary"
+        >
+          <Plus className="w-4 h-4" />
+          Pre-approve Guest
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8 items-start">
-        {/* Main List */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center justify-between px-1">
-             <h3 className="text-base sm:text-lg font-bold text-text-primary flex items-center gap-2">
-                <Clock className="w-5 h-5 text-text-tertiary" /> Personal Log
-             </h3>
-             <button onClick={() => setShowHistory((value) => !value)} className="btn btn-secondary btn-sm !rounded-xl text-xs font-bold">
-               <History className="w-4 h-4" />
-               {showHistory ? "Recent" : "Full History"}
-             </button>
+      {/* Pending approval alert */}
+      {pendingCount > 0 && (
+        <div className="info-banner info-banner-warning rounded-2xl">
+          <Bell className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-sm">
+              {pendingCount} visitor{pendingCount > 1 ? "s are" : " is"} waiting at the gate
+            </p>
+            <p className="text-xs mt-0.5 opacity-80">
+              Scroll down to approve or deny entry
+            </p>
           </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="spinner !w-8 !h-8" />
-              <p className="text-[10px] font-bold text-text-secondary tracking-widest uppercase">Syncing records...</p>
-            </div>
-          ) : visitors.length === 0 ? (
-            <div className="card text-center py-24 bg-surface/30 border-dashed border-2">
-              <Calendar className="w-12 h-12 text-text-tertiary mx-auto mb-4 opacity-20" />
-              <p className="text-text-primary font-bold">No visitor records.</p>
-              <p className="text-xs text-text-secondary mt-1">Gate entries and pre-approved guests will appear here.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-               {visitors.map((v) => {
-                  const style = purposeStyles[v.purpose] || purposeStyles.other;
-                  const needsApproval = v.status === "expected" && !v.residentResponse && !v.isPreApproved;
-                  return (
-                    <div key={v.id} className={`bg-white rounded-[1.25rem] border p-5 sm:p-6 transition-all hover:shadow-md group relative overflow-hidden ${highlightId === v.id || needsApproval ? "border-amber-300 shadow-sm shadow-amber-100" : "border-border/60 hover:border-primary/20"}`}>
-                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                          <div className="flex items-center gap-4 sm:gap-5 flex-1 min-w-0">
-                             <div className={`w-12 h-12 rounded-xl ${style.bg} flex items-center justify-center ${style.text} shrink-0`}>
-                                <User className="w-6 h-6" />
-                             </div>
-                             <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                   <h4 className="text-base sm:text-lg font-bold text-text-primary tracking-tight leading-tight">{v.visitorName}</h4>
-                                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${style.bg} ${style.text}`}>
-                                      {v.purpose}
-                                   </span>
-                                   {needsApproval && (
-                                     <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 flex items-center gap-1">
-                                       <Bell className="w-3 h-3" /> Approval needed
-                                     </span>
-                                   )}
-                                </div>
-                                <div className="flex items-center gap-4">
-                                   <div className="flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary uppercase">
-                                      <Clock className="w-3 h-3 text-text-tertiary" />
-                                      {statusLabel(v)}
-                                   </div>
-                                   {v.phone && (
-                                     <div className="flex items-center gap-1.5 text-[11px] font-semibold text-text-secondary">
-                                        <Phone className="w-3 h-3 text-text-tertiary" />
-                                        {v.phone}
-                                     </div>
-                                   )}
-                                </div>
-                             </div>
-                          </div>
-
-                          {needsApproval ? (
-                            <div className="flex items-center gap-2 pt-4 sm:pt-0 border-t sm:border-t-0 border-border/40">
-                              <button
-                                onClick={() => handleApproval(v.id, "approved")}
-                                disabled={actionLoading === v.id}
-                                className="btn bg-emerald-600 text-white !rounded-xl !py-2.5 !px-4 text-xs font-bold"
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleApproval(v.id, "rejected")}
-                                disabled={actionLoading === v.id}
-                                className="btn bg-red-600 text-white !rounded-xl !py-2.5 !px-4 text-xs font-bold"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                Reject
-                              </button>
-                            </div>
-                         ) : (
-                          <div className="flex flex-col gap-1 pt-4 sm:pt-0 border-t sm:border-t-0 border-border/40 text-right min-w-[160px]">
-                             {!v.entryTime ? (
-                               <p className="text-[10px] font-semibold text-text-secondary flex items-center justify-end gap-1">
-                                 <Calendar className="w-3 h-3" />
-                                 {v.expectedAt ? `Expected ${formatDateTime(v.expectedAt)}` : `Requested ${formatDateTime(v.createdAt)}`}
-                               </p>
-                             ) : (
-                               <p className="text-[10px] font-semibold text-text-secondary flex items-center justify-end gap-1">
-                                 <ArrowDownLeft className="w-3 h-3" />
-                                 In {formatDateTime(v.entryTime)}
-                               </p>
-                             )}
-                             {v.exitTime && (
-                               <p className="text-[10px] font-semibold text-text-secondary flex items-center justify-end gap-1">
-                                 <ArrowUpRight className="w-3 h-3" />
-                                 Out {formatTime(v.exitTime)}
-                               </p>
-                             )}
-                             {v.exitTime && (
-                               <p className="text-[10px] font-bold text-primary">
-                                 Duration {visitDuration(v.entryTime, v.exitTime)}
-                               </p>
-                             )}
-                          </div>
-                          )}
-                       </div>
-                    </div>
-                  );
-               })}
-            </div>
-          )}
         </div>
+      )}
 
-        {/* Info Column */}
-        <div className="space-y-6 hidden lg:block">
-           <div className="p-5 rounded-2xl bg-surface border border-border/40">
-              <h3 className="font-bold text-[10px] text-text-tertiary uppercase tracking-widest mb-4">Pro-Tips</h3>
-              <ul className="space-y-3">
-                 {[
-                    { text: "Saves 2 mins at the gate", icon: Clock },
-                    { text: "Identity verified by security", icon: ShieldCheck },
-                    { text: "Works for 24 hours", icon: UserCheck },
-                 ].map((t, i) => (
-                    <li key={i} className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
-                       <t.icon className="w-3.5 h-3.5 text-text-tertiary" /> {t.text}
-                    </li>
-                 ))}
-              </ul>
-           </div>
-        </div>
+      {/* History toggle */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-text-secondary">
+          {showHistory ? "Full history" : "Recent visitors"}
+        </p>
+        <button
+          onClick={() => setShowHistory((v) => !v)}
+          className="btn btn-ghost btn-sm border border-border"
+        >
+          <History className="w-3.5 h-3.5" />
+          {showHistory ? "Show recent" : "Full history"}
+        </button>
       </div>
 
-      {/* Pre-approval Modal - Mobile Optimized */}
+      {/* List */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+        </div>
+      ) : sortedVisitors.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <UserCheck className="w-7 h-7" />
+          </div>
+          <h3>No visitor records</h3>
+          <p>Gate entries and pre-approved guests will appear here.</p>
+          <button onClick={() => setShowForm(true)} className="btn btn-primary">
+            <Plus className="w-4 h-4" /> Pre-approve a Guest
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {sortedVisitors.map((v) => {
+            const style = getPurpose(v.purpose);
+            const needsApproval = v.status === "expected" && !v.residentResponse && !v.isPreApproved;
+            const isHighlighted = highlightId === v.id || needsApproval;
+
+            return (
+              <article
+                key={v.id}
+                className={`bg-white rounded-2xl border p-4 sm:p-5 transition-shadow ${
+                  isHighlighted
+                    ? "border-amber-300 shadow-md shadow-amber-50"
+                    : "border-border hover:shadow-sm"
+                }`}
+                aria-label={`Visitor: ${v.visitorName}`}
+              >
+                <div className="flex items-start gap-3">
+                  {/* Avatar */}
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${style.bg}`}
+                  >
+                    <User className={`w-5 h-5 ${style.text}`} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {/* Name + purpose */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-base text-text-primary">
+                        {v.visitorName}
+                      </h3>
+                      <span
+                        className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}
+                      >
+                        {style.label}
+                      </span>
+                      {needsApproval && (
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 flex items-center gap-1">
+                          <Bell className="w-3 h-3" /> At gate
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Status + phone */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                      <span className={`text-sm font-semibold ${statusColor(v)}`}>
+                        {statusLabel(v)}
+                      </span>
+                      {v.phone && (
+                        <a
+                          href={`tel:${v.phone}`}
+                          className="flex items-center gap-1 text-xs text-text-secondary hover:text-primary"
+                        >
+                          <Phone className="w-3 h-3" />
+                          {v.phone}
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Times */}
+                    <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
+                      {!v.entryTime && (
+                        <span className="text-xs text-text-tertiary flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {v.expectedAt
+                            ? `Expected ${formatDateTime(v.expectedAt)}`
+                            : `Requested ${formatDateTime(v.createdAt)}`}
+                        </span>
+                      )}
+                      {v.entryTime && (
+                        <span className="text-xs text-text-tertiary flex items-center gap-1">
+                          <ArrowDownLeft className="w-3 h-3" />
+                          In {formatTime(v.entryTime)}
+                        </span>
+                      )}
+                      {v.exitTime && (
+                        <>
+                          <span className="text-xs text-text-tertiary flex items-center gap-1">
+                            <ArrowUpRight className="w-3 h-3" />
+                            Out {formatTime(v.exitTime)}
+                          </span>
+                          <span className="text-xs font-semibold text-primary">
+                            {visitDuration(v.entryTime, v.exitTime)}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Approval actions — large, thumb-friendly */}
+                {needsApproval && (
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      onClick={() => handleApproval(v.id, "approved")}
+                      disabled={actionLoading === v.id}
+                      className="btn btn-success flex-1"
+                      aria-label={`Approve ${v.visitorName}`}
+                    >
+                      {actionLoading === v.id ? (
+                        <span className="spinner spinner-sm" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4" />
+                      )}
+                      Allow Entry
+                    </button>
+                    <button
+                      onClick={() => handleApproval(v.id, "rejected")}
+                      disabled={actionLoading === v.id}
+                      className="btn btn-danger flex-1"
+                      aria-label={`Deny ${v.visitorName}`}
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Deny Entry
+                    </button>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Pre-approve modal */}
       {showForm && (
-        <div className="modal-overlay !bg-black/60 backdrop-blur-sm z-[100]" onClick={() => setShowForm(false)}>
-          <div className="bg-white w-full max-w-xl sm:rounded-[2rem] h-full sm:h-auto overflow-y-auto !p-6 sm:!p-10 shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-8">
-               <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                     <Plus className="w-6 h-6" />
-                  </div>
-                  <div>
-                     <h3 className="text-xl font-bold text-text-primary tracking-tight">Access Token</h3>
-                     <p className="text-xs font-medium text-text-secondary mt-0.5">Smooth entry for your guests</p>
-                  </div>
-               </div>
-               <button onClick={() => setShowForm(false)} className="p-2 rounded-full hover:bg-surface text-text-tertiary transition-colors"><X className="w-6 h-6" /></button>
+        <div
+          className="modal-overlay z-50"
+          onClick={() => setShowForm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Pre-approve a guest"
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-handle" />
+
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-text-primary">Pre-approve Guest</h2>
+                <p className="text-sm text-text-secondary mt-0.5">
+                  Guest can enter without waiting
+                </p>
+              </div>
+              <button onClick={() => setShowForm(false)} className="btn-icon btn-ghost" aria-label="Close">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleAdd} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Guest Name *</label>
-                  <input className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5" placeholder="John Doe" value={form.visitorName} onChange={(e) => setForm({ ...form, visitorName: e.target.value })} required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Guest Contact</label>
-                  <input className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5" placeholder="+91 XXXX XXXX" maxLength={10} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-                </div>
+            <form onSubmit={handleAdd} className="space-y-4">
+              <div className="form-group !mb-0">
+                <label className="label" htmlFor="visitor-name">Guest Name *</label>
+                <input
+                  id="visitor-name"
+                  className="input"
+                  placeholder="Full name of your guest"
+                  value={form.visitorName}
+                  onChange={(e) => setForm({ ...form, visitorName: e.target.value })}
+                  required
+                  autoFocus
+                />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Purpose</label>
-                  <select className="select !rounded-xl !bg-surface font-bold text-sm py-3.5 px-4" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })}>
-                    <option value="guest">Guest / Relative</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="service">Service / Repair</option>
-                    <option value="cab">Cab / Taxi</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary ml-1">Expected Time *</label>
-                  <input type="datetime-local" className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3" value={form.expectedAt} onChange={(e) => setForm({ ...form, expectedAt: e.target.value })} required />
-                </div>
+              <div className="form-group !mb-0">
+                <label className="label" htmlFor="visitor-phone">
+                  Guest Phone <span className="text-text-tertiary font-normal">(optional)</span>
+                </label>
+                <input
+                  id="visitor-phone"
+                  className="input"
+                  type="tel"
+                  placeholder="Mobile number"
+                  maxLength={10}
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
               </div>
 
-              <div className="flex gap-3 pt-6 sticky bottom-0 bg-white sm:static">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 btn btn-secondary !rounded-xl py-4 font-bold text-sm">Cancel</button>
-                <button type="submit" disabled={saving} className="flex-[2] btn btn-primary !rounded-xl py-4 font-bold text-sm shadow-xl shadow-primary/20">
-                  {saving ? "Issuing..." : "Confirm Pass"}
+              <div className="form-group !mb-0">
+                <label className="label" htmlFor="visitor-purpose">Purpose of Visit</label>
+                <select
+                  id="visitor-purpose"
+                  className="select"
+                  value={form.purpose}
+                  onChange={(e) => setForm({ ...form, purpose: e.target.value })}
+                >
+                  <option value="guest">Guest / Relative</option>
+                  <option value="delivery">Delivery</option>
+                  <option value="service">Service / Repair</option>
+                  <option value="cab">Cab / Taxi</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div className="form-group !mb-0">
+                <label className="label" htmlFor="visitor-time">Expected Arrival *</label>
+                <input
+                  id="visitor-time"
+                  type="datetime-local"
+                  className="input"
+                  value={form.expectedAt}
+                  onChange={(e) => setForm({ ...form, expectedAt: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary flex-1">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="btn btn-primary flex-[2]">
+                  {saving ? (
+                    <><span className="spinner spinner-sm" /> Saving...</>
+                  ) : (
+                    <><ShieldCheck className="w-4 h-4" /> Confirm Pre-approval</>
+                  )}
                 </button>
               </div>
             </form>

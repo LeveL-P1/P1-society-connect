@@ -49,12 +49,12 @@ async function calculateActuals(societyId: string, fiscalYear: string, category:
     include: { fund: { select: { id: true, type: true } } },
   });
 
-  const expenseActual = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const legacyFundDebitActual = fundDebits.reduce((sum, tx) => {
+  const expenseActual = expenses.reduce((sum: number, expense: any) => sum + expense.amount, 0);
+  const legacyFundDebitActual = fundDebits.reduce((sum: number, tx: any) => {
     const inferredCategory = categoryFromFundType(tx.fund.type);
     if (inferredCategory !== category) return sum;
 
-    const alreadyHasExpense = expenses.some((expense) =>
+    const alreadyHasExpense = expenses.some((expense: any) =>
       expense.fundId === tx.fund.id &&
       expense.amount === tx.amount &&
       expense.title === tx.description
@@ -90,14 +90,14 @@ export async function GET() {
   ]);
 
   const rowKeys = new Set<string>();
-  budgets.forEach((budget) => rowKeys.add(`${budget.fiscalYear}:${budget.category}`));
-  expenses.forEach((expense) => rowKeys.add(`${fiscalYearFor(expense.paidOn)}:${expense.category}`));
-  fundDebits.forEach((tx) => rowKeys.add(`${fiscalYearFor(tx.createdAt)}:${categoryFromFundType(tx.fund.type)}`));
-  const budgetByKey = new Map(budgets.map((budget) => [`${budget.fiscalYear}:${budget.category}`, budget]));
+  budgets.forEach((budget: any) => rowKeys.add(`${budget.fiscalYear}:${budget.category}`));
+  expenses.forEach((expense: any) => rowKeys.add(`${fiscalYearFor(expense.paidOn)}:${expense.category}`));
+  fundDebits.forEach((tx: any) => rowKeys.add(`${fiscalYearFor(tx.createdAt)}:${categoryFromFundType(tx.fund.type)}`));
+  const budgetByKey = new Map(budgets.map((budget: any) => [`${budget.fiscalYear}:${budget.category}`, budget]));
 
   const withActuals = await Promise.all(Array.from(rowKeys).map(async (key) => {
     const [fiscalYear, category] = key.split(":");
-    const budget = budgetByKey.get(key);
+    const budget: any = budgetByKey.get(key);
     const actuals = await calculateActuals(session!.societyId, fiscalYear, category);
 
     return {

@@ -78,15 +78,25 @@ export default function JoinPage() {
         flat.flatNumber.toLowerCase().includes(search) ||
         (flat.ownerName || "").toLowerCase().includes(search) ||
         (flat.wing || "").toLowerCase().includes(search);
+      
       const roleAvailable =
         form.relationshipType === "TENANT"
           ? !flat.hasTenant
           : form.relationshipType === "OWNER"
             ? !flat.hasMember
             : true;
+      
       return matchesSearch && roleAvailable;
     });
   }, [flatSearch, form.relationshipType, lookup]);
+
+  const hasNoFlatsAtAll = lookup && lookup.flats.length === 0;
+  const hasNoFlatsForRole = lookup && !hasNoFlatsAtAll && lookup.flats.filter(f => {
+    if (form.relationshipType === "TENANT") return !f.hasTenant;
+    if (form.relationshipType === "OWNER") return !f.hasMember;
+    return true;
+  }).length === 0;
+  const hasNoSearchResults = lookup && flats.length === 0 && flatSearch.trim() !== "" && !hasNoFlatsForRole;
 
   const verifyCode = async () => {
     if (!joinCode.trim()) {
@@ -235,24 +245,52 @@ export default function JoinPage() {
                   <label htmlFor="flat" className="label">Select Flat *</label>
                   <select
                     id="flat"
-                    className="input"
+                    className={`input ${flats.length === 0 ? 'border-danger/30 bg-danger/5' : ''}`}
                     value={form.flatId}
                     onChange={(e) => {
                       const flat = lookup.flats.find((item) => item.id === e.target.value);
                       setForm({ ...form, flatId: e.target.value, unitId: flat?.unitId || "" });
                     }}
                     required
+                    disabled={flats.length === 0}
                   >
-                    <option value="">Choose your flat</option>
+                    <option value="">{flats.length === 0 ? "No available flats" : "Choose your flat"}</option>
                     {flats.map((flat) => (
                       <option key={flat.id} value={flat.id}>
-                        {flat.flatNumber}{flat.ownerName ? ` - ${flat.ownerName}` : ""}
+                        {flat.wing ? `${flat.wing}-` : ""}{flat.flatNumber}{flat.ownerName ? ` - ${flat.ownerName}` : ""}
                       </option>
                     ))}
                   </select>
-                  {flats.length === 0 && (
-                    <p className="text-xs text-danger-text mt-2">
-                      No available flats found for this role. Contact your committee.
+                  
+                  {hasNoFlatsAtAll && (
+                    <div className="mt-3 p-3 rounded-lg bg-danger/10 border border-danger/20">
+                      <p className="text-xs text-danger-text font-medium">
+                        This society has no flats registered yet. Please contact the chairman.
+                      </p>
+                    </div>
+                  )}
+
+                  {hasNoFlatsForRole && !hasNoFlatsAtAll && (
+                    <div className="mt-3 p-3 rounded-lg bg-warning/10 border border-warning/20">
+                      <p className="text-xs text-warning-text font-medium">
+                        All flats are already occupied by an {form.relationshipType.toLowerCase()}. 
+                        Try a different role or contact the committee.
+                      </p>
+                    </div>
+                  )}
+
+                  {hasNoSearchResults && (
+                    <div className="mt-3 p-3 rounded-lg bg-surface border border-border">
+                      <p className="text-xs text-text-secondary">
+                        No flats match "{flatSearch}". Try searching by number or wing.
+                      </p>
+                    </div>
+                  )}
+
+                  {!hasNoFlatsAtAll && !hasNoFlatsForRole && flats.length > 0 && (
+                    <p className="text-[10px] text-text-secondary mt-1.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                      Showing {flats.length} available units
                     </p>
                   )}
                 </div>

@@ -23,10 +23,10 @@
   --color-info-bg: #e0f2fe;
   --color-info-text: #0c4a6e;
 
-  /* Surfaces */
-  --color-surface: #f8fafc;
+  /* Surfaces - Soft 90% white with slight navy tint for light mode */
+  --color-surface: #f0f4f8;
   --color-surface-raised: #ffffff;
-  --color-surface-overlay: rgba(248, 250, 252, 0.9);
+  --color-surface-overlay: rgba(240, 244, 248, 0.9);
 
   /* Borders */
   --color-border: #e2e8f0;
@@ -45,6 +45,36 @@
   --touch-target: 44px;
   --radius-card: 1rem;
   --radius-btn: 0.625rem;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+.dark {
+  --color-surface: #0f172a;
+  --color-surface-raised: #1e293b;
+  --color-surface-overlay: rgba(15, 23, 42, 0.9);
+
+  --color-border: #334155;
+  --color-border-strong: #475569;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #64748b;
+  --color-text-disabled: #475569;
+
+  /* Automatic Tailwind Color Inversion for hardcoded classes */
+  --color-white: #1e293b;
+  --color-slate-50: #0f172a;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
 }
 
 /* ============================================
@@ -223,14 +253,14 @@
 
   /* ------ CARDS ------ */
   .card {
-    background: white;
+    background: var(--color-surface-raised);
     border-radius: var(--radius-card);
     border: 1px solid var(--color-border);
     padding: 1.25rem;
   }
 
   .card-lg {
-    background: white;
+    background: var(--color-surface-raised);
     border-radius: 1.25rem;
     border: 1px solid var(--color-border);
     padding: 1.5rem;
@@ -250,7 +280,7 @@
   }
 
   .stat-card {
-    background: white;
+    background: var(--color-surface-raised);
     border-radius: var(--radius-card);
     border: 1px solid var(--color-border);
     padding: 1.25rem 1.5rem;
@@ -265,7 +295,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    background: white;
+    background: var(--color-surface-raised);
     border-radius: 1rem;
     border: 1.5px solid var(--color-border);
     padding: 1.25rem;

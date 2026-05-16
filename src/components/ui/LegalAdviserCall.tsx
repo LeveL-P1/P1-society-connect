@@ -42,7 +42,7 @@ export default function LegalAdviserCall() {
       {telHref ? (
         <a
           href={telHref}
-          className="group flex items-center gap-3 rounded-2xl border border-emerald-200 bg-white/95 px-4 py-3 shadow-lg shadow-emerald-900/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+          className="group flex items-center gap-3 rounded-2xl border border-emerald-200 dark:border-emerald-500/20 bg-surface-raised/95 dark:bg-slate-900/90 px-4 py-3 shadow-lg shadow-emerald-900/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
           aria-label={`Call ${adviser.name}`}
         >
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm">
@@ -62,7 +62,7 @@ export default function LegalAdviserCall() {
         <button
           type="button"
           disabled
-          className="flex items-center gap-3 rounded-2xl border border-border bg-white/90 px-4 py-3 text-left opacity-80 shadow-lg backdrop-blur"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-surface-raised/90 px-4 py-3 text-left opacity-80 shadow-lg backdrop-blur"
           title="Add legal adviser number in Settings"
         >
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-text-secondary">

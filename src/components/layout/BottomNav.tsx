@@ -13,6 +13,7 @@ import {
   Package,
   Megaphone,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
   userRole?: string;
@@ -59,13 +60,10 @@ export default function BottomNav({ userRole = "member" }: BottomNavProps) {
 
   return (
     <nav
-      aria-label="Main navigation"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-100 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]"
+      aria-label="Mobile navigation"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-border pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
     >
-      <div
-        className="flex justify-around items-stretch px-2"
-        style={{ height: "64px" }}
-      >
+      <div className="flex justify-around items-stretch px-2 h-16">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -77,40 +75,36 @@ export default function BottomNav({ userRole = "member" }: BottomNavProps) {
             <Link
               key={item.href}
               href={item.href}
-              aria-label={item.label}
-              aria-current={isActive ? "page" : undefined}
-              className="flex flex-col items-center justify-center flex-1 relative transition-all duration-300"
-              style={{
-                minHeight: "44px",
-                WebkitTapHighlightColor: "transparent",
-                color: isActive ? "#E11D48" : "#64748B", // Rose-600 for active, Slate-500 for inactive
-              }}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1 relative transition-all duration-300",
+                isActive ? "text-primary" : "text-text-tertiary hover:text-text-secondary"
+              )}
+              style={{ WebkitTapHighlightColor: "transparent" }}
             >
-              {/* Top Active Indicator Line (like inspiration) */}
+              {/* Indicator Dot */}
               {isActive && (
                 <motion.div
                   layoutId="bottomNavIndicator"
-                  className="absolute top-0 w-8 h-[3px] bg-rose-600 rounded-b-full"
+                  className="absolute top-0 w-8 h-[4px] bg-primary rounded-b-full shadow-[0_2px_10px_rgba(225,29,72,0.3)]"
                 />
               )}
               
-              <Icon
-                className="relative z-10 transition-transform mb-1"
-                style={{
-                  width: "24px",
-                  height: "24px",
-                  strokeWidth: isActive ? 2.5 : 2,
-                  transform: isActive ? "scale(1.1) translateY(2px)" : "scale(1) translateY(0)",
-                }}
-              />
-              <span
-                className="relative z-10 transition-all"
-                style={{
-                  fontSize: "10px",
-                  fontWeight: isActive ? 700 : 500,
-                  opacity: isActive ? 1 : 0.8,
-                }}
-              >
+              <div className={cn(
+                "relative z-10 transition-transform mb-0.5",
+                isActive ? "scale-110 translate-y-0.5" : "scale-100"
+              )}>
+                <Icon
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    strokeWidth: 2.5,
+                  }}
+                />
+              </div>
+              <span className={cn(
+                "relative z-10 text-[9px] font-black uppercase tracking-tighter transition-all",
+                isActive ? "opacity-100" : "opacity-80"
+              )}>
                 {item.label}
               </span>
             </Link>

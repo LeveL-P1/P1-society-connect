@@ -176,26 +176,26 @@ export default function Sidebar({
             transition-all duration-150 ease-in-out
             
             /* Mobile */
-            ${isOpen ? "translate-x-0 shadow-2xl w-64 h-[100dvh] bg-white border-r border-border rounded-none" : "-translate-x-full w-64 h-[100dvh] bg-white border-r border-border rounded-none absolute top-0 left-0 lg:relative lg:translate-x-0"}
+            ${isOpen ? "translate-x-0 shadow-2xl w-64 h-[100dvh] bg-surface-raised border-r border-border rounded-none" : "-translate-x-full w-64 h-[100dvh] bg-surface-raised border-r border-border rounded-none absolute top-0 left-0 lg:relative lg:translate-x-0"}
             
             /* Desktop */
-            lg:h-full lg:rounded-r-[2rem] lg:rounded-l-none lg:border lg:border-l-0 lg:border-slate-200/50 lg:bg-white/90 lg:backdrop-blur-2xl
-            ${isExpanded ? "lg:w-64 lg:shadow-[30px_0_60px_-15px_rgba(0,0,0,0.3)]" : "lg:w-[88px] lg:shadow-[15px_0_30px_-10px_rgba(0,0,0,0.15)]"}
+            lg:h-full lg:rounded-r-[2rem] lg:rounded-l-none lg:border lg:border-l-0 lg:border-border lg:bg-surface-raised/90 lg:backdrop-blur-2xl
+            ${isExpanded ? "lg:w-64 lg:shadow-[30px_0_60px_-15px_rgba(0,0,0,0.1)]" : "lg:w-[88px] lg:shadow-[15px_0_30px_-10px_rgba(0,0,0,0.05)]"}
           `}
         >
 
         {/* Society header */}
-        <div className={`flex items-center border-b border-slate-200 bg-primary/20 flex-shrink-0 transition-all duration-150 ${isExpanded ? "p-4 gap-3" : "py-4 justify-center"}`}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-sm flex-shrink-0">
-            <Building2 className="w-5 h-5 text-white" />
+        <div className={`flex items-center border-b border-border bg-blue-50 dark:bg-blue-900/20 flex-shrink-0 transition-all duration-150 ${isExpanded ? "p-4 gap-3" : "py-4 justify-center"}`}>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-lg shadow-primary/10 flex-shrink-0">
+            <Building2 className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
           
           <div className={`flex-1 min-w-0 transition-all duration-150 ${isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"}`}>
-            <p className="font-bold text-sm text-slate-800 line-clamp-2 leading-tight" title={societyName}>
+            <p className="font-bold text-sm text-text-primary line-clamp-2 leading-tight" title={societyName}>
               {societyName}
             </p>
             {societyAddress && (
-              <p className="text-[10px] font-bold text-slate-400 truncate leading-tight uppercase tracking-wider mt-0.5" title={societyAddress}>
+              <p className="text-[10px] font-black text-text-secondary truncate leading-tight uppercase tracking-wider mt-0.5" title={societyAddress}>
                 {societyAddress}
               </p>
             )}
@@ -205,17 +205,17 @@ export default function Sidebar({
           <button
             onClick={() => setIsPinned(!isPinned)}
             aria-label={isPinned ? "Unpin sidebar" : "Pin sidebar"}
-            className={`items-center justify-center w-8 h-8 rounded-lg ${isPinned ? "text-primary bg-primary/10" : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"} transition-all duration-150 flex-shrink-0 ${isExpanded ? "hidden lg:flex opacity-100" : "hidden opacity-0"}`}
+            className={`items-center justify-center w-8 h-8 rounded-lg ${isPinned ? "text-primary bg-primary/10" : "text-text-secondary hover:text-text-primary hover:bg-surface"} transition-all duration-150 flex-shrink-0 ${isExpanded ? "hidden lg:flex opacity-100" : "hidden opacity-0"}`}
             title={isPinned ? "Unstick Sidebar" : "Stick Sidebar"}
           >
-            {isPinned ? <Pin className="w-4 h-4 fill-current" /> : <PinOff className="w-4 h-4" />}
+            {isPinned ? <Pin className="w-4 h-4 fill-current" strokeWidth={2.5} /> : <PinOff className="w-4 h-4" strokeWidth={2.5} />}
           </button>
 
           {/* Mobile Close */}
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 flex-shrink-0"
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:bg-surface flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -233,12 +233,12 @@ export default function Sidebar({
                     onClick={() => toggleModule(section.title)}
                     className={`w-full flex items-center justify-between px-3 mb-1.5 transition-all duration-150 group ${isExpanded ? "opacity-100" : "opacity-0 hidden"}`}
                   >
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-700 transition-colors">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-text-secondary group-hover:text-text-primary transition-colors">
                       {section.title}
                     </span>
                     <span className={isSectionCollapsed ? "animate-bounce" : ""}>
                       <ChevronUp 
-                        className={`w-[18px] h-[18px] text-slate-700 group-hover:text-slate-900 transition-all duration-300 ${isSectionCollapsed ? "rotate-180" : ""}`} 
+                        className={`w-[18px] h-[18px] text-text-primary/70 group-hover:text-text-primary transition-all duration-300 ${isSectionCollapsed ? "rotate-180" : ""}`} 
                         strokeWidth={2.5}
                       />
                     </span>
@@ -257,16 +257,16 @@ export default function Sidebar({
                             onClick={onClose}
                             className={`flex items-center rounded-lg transition-all duration-150 group ${
                               isExpanded ? "px-3 py-2 gap-3" : "justify-center p-2.5"
-                            } ${active ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`}
+                            } ${active ? "bg-primary/10 text-primary font-bold shadow-sm" : "text-text-primary/80 hover:bg-surface hover:text-primary"}`}
                             title={!isExpanded ? item.label : undefined}
                           >
-                            <Icon
-                              className={`flex-shrink-0 transition-transform duration-150 ${
-                                active ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
-                              } ${!isExpanded && "group-hover:scale-110"}`}
-                              style={{ width: 20, height: 20, strokeWidth: active ? 2.5 : 2 }}
-                            />
-                            <span className={`truncate text-sm font-semibold transition-all duration-150 ${
+                             <Icon
+                               className={`flex-shrink-0 transition-transform duration-150 ${
+                                 active ? "text-primary" : "text-text-secondary group-hover:text-primary"
+                               } ${!isExpanded && "group-hover:scale-110"}`}
+                               style={{ width: 20, height: 20, strokeWidth: 2.5 }}
+                             />
+                            <span className={`truncate text-sm font-bold transition-all duration-150 ${
                               isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
                             }`}>
                               {item.label}
@@ -283,10 +283,10 @@ export default function Sidebar({
         </nav>
 
         {/* Footer — logout */}
-        <div className={`flex-shrink-0 border-t border-slate-200 bg-rose-500/20 transition-all duration-150 ${isExpanded ? "p-4" : "p-3"}`}>
+        <div className={`flex-shrink-0 border-t border-border bg-surface-raised transition-all duration-150 ${isExpanded ? "p-4" : "p-3"}`}>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center rounded-xl text-rose-600 hover:bg-rose-200 transition-colors duration-150 group overflow-hidden ${isExpanded ? "px-3 py-2.5 gap-3" : "justify-center p-3"}`}
+            className={`w-full flex items-center rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-500/20 transition-all duration-150 group overflow-hidden ${isExpanded ? "px-3 py-2.5 gap-3" : "justify-center p-3"}`}
             title={!isExpanded ? "Sign Out" : undefined}
           >
             <LogOut className={`w-[19px] h-[19px] flex-shrink-0 transition-transform duration-300 ease-in-out ${isExpanded ? "group-hover:translate-x-[4.5rem]" : "group-hover:translate-x-1"}`} strokeWidth={2.5} />

@@ -12,7 +12,10 @@ import {
   UserCheck,
   Clock,
   X,
+  BellRing,
+  Inbox
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Notification {
   id: string;
@@ -24,22 +27,22 @@ interface Notification {
   createdAt: string;
 }
 
-const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
-  bill_due: { icon: Clock, color: "text-warning bg-warning-bg" },
-  bill_paid: { icon: Receipt, color: "text-success bg-success-bg" },
-  complaint_update: { icon: AlertTriangle, color: "text-orange-600 bg-orange-50" },
-  notice_new: { icon: Megaphone, color: "text-primary bg-blue-50" },
-  poll_new: { icon: Vote, color: "text-purple-600 bg-purple-50" },
-  visitor_entry: { icon: UserCheck, color: "text-cyan-600 bg-cyan-50" },
-  late_fee: { icon: Receipt, color: "text-danger bg-danger-bg" },
-  reminder: { icon: Bell, color: "text-warning bg-warning-bg" },
+const typeConfig: Record<string, { icon: any; color: string; bg: string }> = {
+  bill_due: { icon: Clock, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
+  bill_paid: { icon: Receipt, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-900/20" },
+  complaint_update: { icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-900/20" },
+  notice_new: { icon: Megaphone, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  poll_new: { icon: Vote, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/20" },
+  visitor_entry: { icon: UserCheck, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-900/20" },
+  late_fee: { icon: Receipt, color: "text-red-600", bg: "bg-red-50 dark:bg-red-900/20" },
+  reminder: { icon: BellRing, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-900/20" },
 };
 
 function timeAgo(dateStr: string): string {
   const d = new Date(dateStr);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - d.getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return "Just now";
   const mins = Math.floor(seconds / 60);
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
@@ -71,9 +74,7 @@ export default function NotificationCenter() {
   }, []);
 
   useEffect(() => {
-    // Delay initial fetch by 2s so it doesn't compete with critical dashboard data
     const initialTimer = setTimeout(() => fetchNotifications(false), 2000);
-    // Poll every 60s (background — no loading flash)
     const interval = setInterval(() => fetchNotifications(true), 60_000);
     return () => {
       clearTimeout(initialTimer);
@@ -81,7 +82,6 @@ export default function NotificationCenter() {
     };
   }, [fetchNotifications]);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
@@ -126,106 +126,112 @@ export default function NotificationCenter() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-surface transition-colors"
+        className={cn(
+          "relative w-11 h-11 rounded-[1.25rem] flex items-center justify-center transition-all",
+          open ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-surface text-text-secondary hover:bg-primary/5"
+        )}
         id="notification-bell"
       >
-        <Bell className="w-5 h-5 text-text-secondary" />
+        <Bell className="w-5 h-5" strokeWidth={2.5} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center px-1 animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center px-1 border-2 border-white dark:border-slate-900 animate-in zoom-in duration-300">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[360px] max-h-[480px] bg-white rounded-xl shadow-xl border border-border z-50 overflow-hidden"
-          style={{ animation: "slideUp 0.15s ease" }}>
+        <div className="absolute right-0 top-full mt-4 w-[380px] bg-surface-raised rounded-[2.5rem] border border-border shadow-2xl z-50 overflow-hidden animate-in slide-in-from-top-4 fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface/50">
-            <h3 className="font-semibold text-sm">Notifications</h3>
+          <div className="px-6 py-5 border-b border-border/50 flex items-center justify-between">
+            <div>
+              <h3 className="font-black text-lg text-text-primary">Alerts</h3>
+              <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest">{unreadCount} UNREAD MESSAGES</p>
+            </div>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                  className="p-2 rounded-xl text-primary hover:bg-primary/10 transition-colors"
+                  title="Mark all as read"
                 >
-                  <CheckCheck className="w-3 h-3" /> Mark all read
+                  <CheckCheck className="w-5 h-5" strokeWidth={2.5} />
                 </button>
               )}
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded hover:bg-border/50"
+                className="p-2 rounded-xl text-text-tertiary hover:bg-surface transition-colors"
               >
-                <X className="w-4 h-4 text-text-secondary" />
+                <X className="w-5 h-5" strokeWidth={2.5} />
               </button>
             </div>
           </div>
 
           {/* List */}
-          <div className="overflow-y-auto max-h-[400px]">
+          <div className="overflow-y-auto max-h-[420px] overscroll-contain no-scrollbar">
             {loading && !notifications.length ? (
-              <div className="flex justify-center py-8">
-                <div className="spinner" />
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center animate-pulse">
+                   <Bell className="w-6 h-6 text-text-tertiary" />
+                </div>
+                <p className="text-xs font-bold text-text-tertiary animate-pulse">Checking for updates...</p>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="text-center py-8 text-sm text-text-secondary">
-                <Bell className="w-8 h-8 mx-auto mb-2 text-border" />
-                No notifications yet
+              <div className="text-center py-20 px-10">
+                <div className="w-16 h-16 bg-surface rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 text-text-tertiary border border-border">
+                  <Inbox className="w-8 h-8" strokeWidth={1.5} />
+                </div>
+                <h4 className="text-base font-black text-text-primary">Inbox is Clear</h4>
+                <p className="text-xs font-medium text-text-secondary mt-2">Everything is up to date. You'll see new alerts here.</p>
               </div>
             ) : (
-              notifications.map((n) => {
-                const config = typeConfig[n.type] || typeConfig.reminder;
-                const Icon = config.icon;
-                return (
-                  <div
-                    key={n.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handleClick(n)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") handleClick(n);
-                    }}
-                    className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-surface/80 transition-colors border-b border-border/50 last:border-b-0 ${
-                      !n.isRead ? "bg-blue-50/40" : ""
-                    }`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${config.color}`}
+              <div className="divide-y divide-border/30">
+                {notifications.map((n) => {
+                  const config = typeConfig[n.type] || typeConfig.reminder;
+                  const Icon = config.icon;
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => handleClick(n)}
+                      className={cn(
+                        "w-full text-left px-6 py-4 flex gap-4 transition-all hover:bg-surface/50 group relative",
+                        !n.isRead ? "bg-primary/[0.03]" : ""
+                      )}
                     >
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className={`text-sm truncate ${!n.isRead ? "font-semibold" : "font-medium"}`}>
-                          {n.title}
-                        </p>
-                        {!n.isRead && (
-                          <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                        )}
+                      <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-transparent transition-transform group-hover:scale-105", config.bg, config.color)}>
+                        <Icon className="w-5 h-5" strokeWidth={2.5} />
                       </div>
-                      <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">
-                        {n.message}
-                      </p>
-                      <p className="text-[10px] text-text-secondary/70 mt-1">
-                        {timeAgo(n.createdAt)}
-                      </p>
-                    </div>
-                    {!n.isRead && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markRead(n.id);
-                        }}
-                        className="p-1 rounded hover:bg-border/50 shrink-0 self-start"
-                        title="Mark as read"
-                      >
-                        <Check className="w-3 h-3 text-text-secondary" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className={cn("text-sm truncate", !n.isRead ? "font-black text-text-primary" : "font-bold text-text-secondary")}>
+                            {n.title}
+                          </p>
+                          {!n.isRead && (
+                            <span className="w-2 h-2 rounded-full bg-primary shrink-0 animate-pulse" />
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-text-tertiary line-clamp-2 leading-relaxed">
+                          {n.message}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2">
+                           <Clock className="w-3 h-3 text-text-tertiary" strokeWidth={2.5} />
+                           <span className="text-[10px] font-black text-text-tertiary uppercase tracking-tight">
+                            {timeAgo(n.createdAt)}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 bg-surface/30 border-t border-border/50 text-center">
+             <button onClick={() => setOpen(false)} className="text-[10px] font-black text-text-tertiary uppercase tracking-[0.2em] hover:text-primary transition-colors">
+                Dismiss Panel
+             </button>
           </div>
         </div>
       )}

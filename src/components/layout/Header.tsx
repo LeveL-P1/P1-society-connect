@@ -10,11 +10,17 @@ import {
   ChevronDown,
   Copy,
   Bell,
+  UserCircle2,
+  Mail,
+  Building2,
+  ExternalLink,
+  ShieldCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import NotificationCenter from "@/components/ui/NotificationCenter";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   userName?: string;
@@ -40,10 +46,10 @@ const roleColors: Record<string, string> = {
   chairman:  "bg-blue-100 text-blue-700",
   secretary: "bg-blue-100 text-blue-700",
   treasurer: "bg-blue-100 text-blue-700",
-  member:    "bg-emerald-100 text-emerald-700",
-  tenant:    "bg-sky-100 text-sky-700",
-  guard:     "bg-orange-100 text-orange-700",
-  watchman:  "bg-orange-100 text-orange-700",
+  member:    "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20",
+  tenant:    "bg-sky-50 text-sky-600 dark:bg-sky-900/20",
+  guard:     "bg-orange-50 text-orange-600 dark:bg-orange-900/20",
+  watchman:  "bg-orange-50 text-orange-600 dark:bg-orange-900/20",
 };
 
 export default function Header({
@@ -57,7 +63,6 @@ export default function Header({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  /* Close dropdown on outside click */
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -91,152 +96,111 @@ export default function Header({
   };
 
   return (
-    <header
-      className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border shadow-sm lg:bg-transparent lg:backdrop-blur-none lg:border-none lg:shadow-none pointer-events-none"
-    >
-      <div
-        className="flex items-center justify-between gap-3 px-4 lg:px-6 pt-0 lg:pt-4"
-        style={{ height: "60px" }}
-      >
-        {/* Left — hamburger + brand */}
+    <header className="sticky top-0 z-30 bg-white dark:bg-slate-950 border-b border-border lg:bg-transparent lg:border-none pointer-events-none">
+      <div className="flex items-center justify-between gap-3 px-4 lg:px-6 h-[72px] lg:h-[88px]">
+        {/* Left — hamburger + brand (Mobile Only) */}
         <div className="flex items-center gap-3 min-w-0 lg:hidden pointer-events-auto">
           <button
-            id="header-menu-toggle"
             onClick={onMenuToggle}
-            aria-label="Open menu"
-            className="btn-icon btn-ghost lg:hidden flex-shrink-0"
-            style={{ minHeight: "44px", width: "44px" }}
+            className="w-11 h-11 flex items-center justify-center rounded-2xl bg-surface border border-border text-text-secondary hover:text-primary transition-colors"
           >
-            <Menu className="w-5 h-5 text-text-secondary" />
+            <Menu className="w-5 h-5" strokeWidth={2.5} />
           </button>
-
-          <div className="hidden sm:flex items-center gap-2 min-w-0">
-            <div
-              className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0"
-            >
-              <Shield className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-lg shadow-primary/20">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-text-secondary truncate">
-              Society Manager
+            <span className="text-sm font-black text-text-primary truncate tracking-tight">
+              SOCIETY CONNECT
             </span>
           </div>
         </div>
 
-        {/* Right — actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto lg:bg-white/80 lg:backdrop-blur-xl lg:px-3 lg:py-1.5 lg:rounded-[1.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] lg:border lg:border-white/60 pointer-events-auto transition-all">
+        {/* Action Bar (Glassmorphic Container) */}
+        <div className="flex items-center gap-2 ml-auto bg-white dark:bg-slate-900/80 backdrop-blur-xl px-2 py-2 lg:px-3 lg:py-2 rounded-[2rem] border border-border shadow-2xl shadow-black/5 pointer-events-auto transition-all">
+          
           {/* Join code — desktop only */}
           {canShareJoinCode && (
             <button
-              type="button"
               onClick={copyJoinCode}
-              title="Copy society join code"
-              className="hidden md:flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-primary hover:bg-primary/10 transition-colors"
-              style={{ minHeight: "40px" }}
+              className="hidden md:flex items-center gap-3 h-11 px-4 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/20 text-primary transition-all group"
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
-                Code
-              </span>
-              <span className="font-mono text-sm font-black tracking-widest">
-                {joinCode}
-              </span>
-              <Copy className="w-3.5 h-3.5" />
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-[9px] font-black uppercase tracking-widest text-primary/60 mb-0.5">Society Code</span>
+                <span className="text-sm font-black tracking-[0.1em]">{joinCode}</span>
+              </div>
+              <Copy className="w-4 h-4 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
             </button>
           )}
 
-          <ThemeToggle />
-          <NotificationCenter />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
+            <NotificationCenter />
+          </div>
+
+          <div className="w-px h-8 bg-border/50 mx-1 hidden sm:block" />
 
           {/* Profile dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
-              id="header-profile-btn"
               onClick={() => setShowProfile((v) => !v)}
-              aria-expanded={showProfile}
-              aria-haspopup="true"
-              aria-label="Open profile menu"
-              className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-surface transition-colors cursor-pointer border-l border-border ml-1 pl-3"
-              style={{ minHeight: "44px" }}
+              className={cn(
+                "flex items-center gap-3 rounded-2xl pl-2 pr-4 h-11 transition-all group",
+                showProfile ? "bg-surface" : "hover:bg-surface/50"
+              )}
             >
-              {/* Avatar */}
-              <div
-                className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm flex-shrink-0"
-              >
-                <span className="text-white text-xs font-bold">{initials}</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-md shadow-primary/10 shrink-0">
+                <span className="text-white text-[11px] font-black">{initials}</span>
               </div>
-
-              {/* Name + role — hidden on very small screens */}
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-semibold text-text-primary leading-tight">
+                <p className="text-xs font-black text-text-primary leading-tight group-hover:text-primary transition-colors">
                   {userName}
                 </p>
-                <p className="text-[11px] text-text-secondary capitalize leading-tight">
+                <p className="text-[10px] text-text-tertiary font-bold uppercase tracking-tight mt-0.5">
                   {roleLabels[userRole] ?? userRole}
                 </p>
               </div>
-
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-text-tertiary hidden sm:block transition-transform duration-200 ${
-                  showProfile ? "rotate-180" : ""
-                }`}
-              />
+              <ChevronDown className={cn("w-4 h-4 text-text-tertiary transition-transform duration-300", showProfile ? "rotate-180" : "rotate-0")} strokeWidth={2.5} />
             </button>
 
-            {/* Dropdown */}
+            {/* Dropdown Menu */}
             {showProfile && (
-              <div
-                className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl border border-border shadow-xl overflow-hidden z-50"
-                style={{ animation: "scaleIn 0.15s ease" }}
-              >
-                {/* Profile info */}
-                <div className="p-4 border-b border-border bg-surface/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center shadow-sm flex-shrink-0">
-                      <span className="text-white text-sm font-bold">{initials}</span>
+              <div className="absolute right-0 top-full mt-4 w-72 bg-surface-raised rounded-[2.5rem] border border-border shadow-2xl overflow-hidden z-50 animate-in slide-in-from-top-4 fade-in duration-300">
+                <div className="p-6 bg-gradient-to-br from-primary/10 via-transparent to-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-xl shadow-primary/20 shrink-0">
+                      <span className="text-white text-lg font-black">{initials}</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-text-primary truncate">
-                        {userName}
-                      </p>
-                      <p className="text-xs text-text-secondary truncate">
-                        {userEmail}
-                      </p>
-                      <span
-                        className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${roleBadge}`}
-                      >
+                      <h4 className="text-lg font-black text-text-primary truncate tracking-tight">{userName}</h4>
+                      <p className="text-xs font-medium text-text-tertiary truncate mb-2">{userEmail}</p>
+                      <span className={cn("px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-transparent", roleBadge)}>
                         {roleLabels[userRole] ?? userRole}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Menu items */}
-                <div className="p-1.5 space-y-0.5">
-                  <button
-                    onClick={() => { setShowProfile(false); router.push("/settings"); }}
-                    className="sidebar-link !min-h-[44px] w-full"
-                  >
-                    <User className="w-4 h-4" />
-                    My Profile
+                <div className="p-2 space-y-1">
+                  <button onClick={() => { setShowProfile(false); router.push("/profile"); }} className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-surface text-text-secondary hover:text-primary transition-all group">
+                    <UserCircle2 className="w-5 h-5 text-text-tertiary group-hover:text-primary" strokeWidth={2.5} />
+                    <span className="text-sm font-bold">My Account</span>
+                    <ChevronDown className="w-4 h-4 ml-auto -rotate-90 opacity-0 group-hover:opacity-100 transition-all" strokeWidth={2.5} />
                   </button>
 
                   {["chairman", "secretary", "treasurer"].includes(userRole) && (
-                    <button
-                      onClick={() => { setShowProfile(false); router.push("/settings"); }}
-                      className="sidebar-link !min-h-[44px] w-full"
-                    >
-                      <Settings className="w-4 h-4" />
-                      Society Settings
+                    <button onClick={() => { setShowProfile(false); router.push("/settings"); }} className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-surface text-text-secondary hover:text-primary transition-all group">
+                      <Building2 className="w-5 h-5 text-text-tertiary group-hover:text-primary" strokeWidth={2.5} />
+                      <span className="text-sm font-bold">Society Portal</span>
+                      <ExternalLink className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-all" strokeWidth={2} />
                     </button>
                   )}
 
-                  <div className="divider !my-1" />
+                  <div className="h-px bg-border/50 mx-4 my-2" />
 
-                  <button
-                    onClick={handleLogout}
-                    className="sidebar-link !min-h-[44px] w-full !text-danger hover:!bg-danger-bg"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
+                  <button onClick={handleLogout} className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-600 transition-all group">
+                    <LogOut className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={2.5} />
+                    <span className="text-sm font-black uppercase tracking-widest">Sign Out</span>
                   </button>
                 </div>
               </div>

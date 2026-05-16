@@ -6,10 +6,11 @@ import toast from "react-hot-toast";
 import { 
   Plus, AlertTriangle, CheckCircle2, Clock, Share2, 
   MessageSquare, Info, ShieldAlert, Calendar, X, 
-  ChevronRight, Filter, Search, MoreVertical, CheckCircle
+  ChevronRight, Filter, Search, MoreVertical, CheckCircle,
+  Wrench, Zap, Trash2, ShieldCheck, HelpCircle
 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
-import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { cn } from "@/lib/utils";
 
 interface Complaint {
   id: string;
@@ -32,14 +33,33 @@ interface Stats {
   total: number;
 }
 
-const priorityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  low: { label: "Low", color: "text-slate-500", bg: "bg-slate-50 border-slate-200" },
-  medium: { label: "Medium", color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
-  high: { label: "High", color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
-  urgent: { label: "Urgent", color: "text-rose-600", bg: "bg-rose-50 border-rose-100" },
+const PRIORITY_CONFIG: Record<string, { label: string; text: string; bg: string }> = {
+  low: { label: "Routine", text: "text-text-tertiary", bg: "bg-surface" },
+  medium: { label: "Standard", text: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  high: { label: "High Priority", text: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
+  urgent: { label: "Immediate", text: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-900/20" },
 };
 
-const categories = ["general", "plumbing", "electrical", "cleanliness", "security", "parking", "other"];
+const CATEGORY_ICONS: Record<string, any> = {
+  plumbing: Wrench,
+  electrical: Zap,
+  cleanliness: Trash2,
+  security: ShieldCheck,
+  general: MessageSquare,
+  other: HelpCircle,
+};
+
+function SkeletonCard() {
+  return (
+    <div className="bg-surface-raised rounded-[2rem] p-6 border border-border animate-pulse flex gap-4">
+      <div className="w-12 h-12 rounded-2xl bg-surface" />
+      <div className="flex-1 space-y-2 mt-1">
+        <div className="h-4 bg-surface rounded w-1/3" />
+        <div className="h-10 bg-surface rounded w-full" />
+      </div>
+    </div>
+  );
+}
 
 export default function ComplaintsPage() {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -74,13 +94,11 @@ export default function ComplaintsPage() {
         setStats(d.stats || { open: 0, inProgress: 0, resolved: 0, total: 0 });
         if (d.societyId) setSocietyId(d.societyId);
       })
-      .catch(() => toast.error("Failed to load complaints"))
+      .catch(() => toast.error("Failed to load records"))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    fetchComplaints();
-  }, [fetchComplaints]);
+  useEffect(() => { fetchComplaints(); }, [fetchComplaints]);
 
   useEffect(() => {
     if (user.name || user.flatNumber) {
@@ -102,7 +120,7 @@ export default function ComplaintsPage() {
         body: JSON.stringify(form),
       });
       if (res.ok) {
-        toast.success("Complaint registered successfully");
+        toast.success("Request registered");
         setShowForm(false);
         setForm({ 
           flatNumber: user?.flatNumber || "", 
@@ -118,7 +136,7 @@ export default function ComplaintsPage() {
         toast.error(d.error || "Failed to submit");
       }
     } catch {
-      toast.error("Something went wrong");
+      toast.error("Network error");
     } finally {
       setSaving(false);
     }
@@ -132,11 +150,11 @@ export default function ComplaintsPage() {
         body: JSON.stringify({ status, resolution: res }),
       });
       if (response.ok) {
-        toast.success(`Complaint ${status === "resolved" ? "resolved" : "updated"}`);
+        toast.success(`Updated to ${status}`);
         fetchComplaints();
       }
     } catch {
-      toast.error("Failed to update status");
+      toast.error("Update failed");
     }
     setResolveComplaint(null);
     setResolution("");
@@ -151,86 +169,89 @@ export default function ComplaintsPage() {
     ));
 
   return (
-    <div className="page-container max-w-4xl">
-      <div className="page-header">
+    <div className="page-container max-w-4xl mx-auto space-y-8 pb-20">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">Helpdesk</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">
-            Track and resolve society issues in one place
-          </p>
+          <h1 className="text-3xl font-black text-text-primary tracking-tight">Helpdesk</h1>
+          <p className="text-text-secondary font-medium mt-1">Track and resolve society issues in one place</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
           {isAdmin && societyId && (
             <button
               onClick={() => {
                 const link = `${window.location.origin}/complaint/submit?sId=${societyId}`;
                 navigator.clipboard.writeText(link);
-                toast.success("Shareable form link copied!");
+                toast.success("Form link copied!");
               }}
-              className="btn btn-secondary !rounded-2xl"
+              className="p-3 rounded-2xl bg-surface border border-border text-text-secondary hover:text-primary transition-colors"
             >
-              <Share2 className="w-4 h-4 mr-2" /> Share Link
+              <Share2 className="w-5 h-5" strokeWidth={2.5} />
             </button>
           )}
-          <button onClick={() => setShowForm(true)} className="btn btn-primary shadow-xl shadow-primary/20 !rounded-2xl">
-            <Plus className="w-5 h-5 mr-2" /> New Request
+          <button onClick={() => setShowForm(true)} className="btn btn-primary h-12 px-6 rounded-2xl shadow-lg shadow-primary/20">
+            <Plus className="w-5 h-5" strokeWidth={2.5} />
+            <span>New Request</span>
           </button>
         </div>
       </div>
 
+      {/* Admin Quick Stats */}
       {isAdmin ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "New", val: stats.open, color: "text-rose-600", bg: "bg-rose-50", icon: AlertTriangle, border: "border-rose-100" },
-            { label: "Active", val: stats.inProgress, color: "text-amber-600", bg: "bg-amber-50", icon: Clock, border: "border-amber-100" },
-            { label: "Fixed", val: stats.resolved, color: "text-emerald-600", bg: "bg-emerald-50", icon: CheckCircle2, border: "border-emerald-100" },
-            { label: "Total", val: stats.total, color: "text-slate-600", bg: "bg-slate-50", icon: Info, border: "border-slate-100" },
+            { label: "New", val: stats.open, color: "text-rose-500", bg: "bg-rose-50 dark:bg-rose-900/20", icon: AlertTriangle },
+            { label: "Active", val: stats.inProgress, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20", icon: Clock },
+            { label: "Fixed", val: stats.resolved, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", icon: CheckCircle2 },
+            { label: "Total", val: stats.total, color: "text-text-primary", bg: "bg-surface", icon: MessageSquare },
           ].map((s) => (
-            <div key={s.label} className={`bg-white dark:bg-slate-800 p-5 rounded-[2rem] border ${s.border} dark:border-slate-700 shadow-sm`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl ${s.bg} dark:bg-slate-900/50 flex items-center justify-center ${s.color}`}>
-                  <s.icon className="w-5 h-5" />
-                </div>
-                <p className={`text-2xl font-black ${s.color}`}>{s.val}</p>
+            <div key={s.label} className="bg-surface-raised p-5 rounded-[2rem] border border-border card-float flex flex-col justify-between h-32">
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm", s.bg)}>
+                <s.icon className={cn("w-5 h-5", s.color)} strokeWidth={2.5} />
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label} Issues</p>
+              <div>
+                <p className={cn("text-2xl font-black tracking-tight", s.color)}>{s.val}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-text-tertiary">{s.label} Issues</p>
+              </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10 flex items-center gap-5 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center text-primary shadow-sm border border-primary/10">
-            <Info className="w-6 h-6" />
+        <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-900/20 flex items-center gap-5">
+          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-blue-900/30 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 dark:border-blue-800 shrink-0">
+            <ShieldAlert className="w-7 h-7" strokeWidth={2} />
           </div>
           <div>
-            <p className="text-sm font-black text-slate-900 dark:text-white">Need immediate help?</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Call Security Command at <strong>Ext 99</strong> for urgent issues.
+            <p className="font-black text-text-primary">Need immediate assistance?</p>
+            <p className="text-sm text-text-secondary mt-0.5">
+              Call Security Command at <strong className="text-blue-600">Ext 99</strong> for urgent on-site help.
             </p>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" strokeWidth={2.5} />
           <input 
-            className="input !pl-11 !rounded-2xl !bg-white dark:!bg-slate-800 font-bold text-sm" 
-            placeholder="Search by issue or flat..." 
+            className="w-full h-14 bg-surface-raised border border-border rounded-[1.5rem] pl-12 pr-4 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm" 
+            placeholder="Search by issue, flat or description..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar sm:pb-0">
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
           {["all", "open", "in_progress", "resolved"].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
+              className={cn(
+                "h-14 px-6 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border shrink-0",
                 statusFilter === s 
-                  ? "bg-slate-900 text-white border-slate-900 shadow-lg" 
-                  : "bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700"
-              }`}
+                  ? "bg-text-primary text-surface border-text-primary shadow-lg shadow-text-primary/10" 
+                  : "bg-surface-raised text-text-tertiary border-border hover:border-primary/30"
+              )}
             >
               {s === "all" ? "Board View" : s.replace("_", " ")}
             </button>
@@ -238,161 +259,163 @@ export default function ComplaintsPage() {
         </div>
       </div>
 
+      {/* Main List */}
       {loading ? (
         <div className="space-y-4">
-          <SkeletonCard />
-          <SkeletonCard />
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 text-center px-6">
-          <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6 text-slate-300">
-            <CheckCircle2 className="w-10 h-10" />
+        <div className="bg-surface-raised rounded-[2.5rem] p-16 text-center border border-border card-float">
+          <div className="w-20 h-20 bg-surface rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-text-tertiary border border-border">
+            <CheckCircle2 className="w-10 h-10" strokeWidth={1.5} />
           </div>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No issues found</h3>
-          <p className="text-slate-500 dark:text-slate-400 max-w-sm">
-            Everything seems to be working perfectly. New helpdesk requests will appear here.
+          <h3 className="text-xl font-black text-text-primary">All Clear</h3>
+          <p className="text-text-secondary mt-2 max-w-sm mx-auto">
+            No active issues found matching your filters. New requests will appear here once raised.
           </p>
         </div>
       ) : (
-        <div className="space-y-4 pb-12">
-          {filtered.map((c) => (
-            <div key={c.id} className="card p-0 overflow-hidden group">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
+        <div className="space-y-4">
+          {filtered.map((c) => {
+            const priority = PRIORITY_CONFIG[c.priority] || PRIORITY_CONFIG.medium;
+            const CatIcon = CATEGORY_ICONS[c.category.toLowerCase()] || MessageSquare;
+            
+            return (
+              <div 
+                key={c.id} 
+                className="bg-surface-raised rounded-[2rem_1.5rem_2rem_1.5rem] border border-border p-6 card-float group hover:border-primary/20 transition-all"
+              >
+                <div className="flex items-start justify-between mb-5">
                   <div className="flex items-center gap-3">
                     <StatusBadge status={c.status} />
-                    <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border ${priorityConfig[c.priority]?.bg} ${priorityConfig[c.priority]?.color}`}>
-                      {priorityConfig[c.priority]?.label}
-                    </div>
+                    <span className={cn("text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-transparent", priority.bg, priority.text)}>
+                      {priority.label}
+                    </span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      {new Date(c.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
-                    </p>
-                  </div>
+                  <p className="text-[11px] font-black text-text-tertiary uppercase tracking-wider">
+                    {new Date(c.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
+                  </p>
                 </div>
 
-                <div className="flex gap-5">
+                <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight mb-2 group-hover:text-primary transition-colors">
+                    <h3 className="text-xl font-black text-text-primary mb-2 leading-tight group-hover:text-primary transition-colors">
                       {c.title}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-6 font-medium">
+                    <p className="text-sm font-medium text-text-secondary leading-relaxed mb-6">
                       {c.description}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-primary text-[10px] font-black border border-slate-200 dark:border-slate-800">
-                          {c.flatNumber?.charAt(0)}
+                    <div className="flex flex-wrap items-center gap-6 pt-5 border-t border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-primary shadow-sm">
+                           <CatIcon className="w-5 h-5" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none mb-1">{c.raisedBy}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Flat {c.flatNumber} • {c.category}</p>
+                          <p className="text-xs font-black text-text-primary leading-none mb-1">{c.raisedBy}</p>
+                          <p className="text-[11px] font-bold text-text-tertiary uppercase tracking-tighter">Flat {c.flatNumber} • {c.category}</p>
                         </div>
                       </div>
-                      
+
                       {c.resolution && (
-                        <div className="flex items-center gap-2.5 bg-emerald-50 dark:bg-emerald-900/20 py-2 px-3 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                          <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
-                            <span className="opacity-60 uppercase tracking-tighter mr-1">FIXED:</span> 
-                            {c.resolution}
-                          </p>
-                        </div>
+                         <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-900/10 px-4 py-2.5 rounded-2xl border border-emerald-100 dark:border-emerald-900/20">
+                           <CheckCircle className="w-4 h-4 text-emerald-500" strokeWidth={2.5} />
+                           <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                             <span className="opacity-60 mr-1 uppercase text-[10px] tracking-widest font-black">Fixed:</span>
+                             {c.resolution}
+                           </p>
+                         </div>
                       )}
                     </div>
                   </div>
 
                   {isAdmin && (c.status === "open" || c.status === "in_progress") && (
-                    <div className="flex flex-col gap-2 shrink-0 sm:pl-6 sm:border-l border-slate-100 dark:border-slate-800 justify-center">
+                    <div className="flex flex-row md:flex-col gap-2 shrink-0 md:pl-6 md:border-l border-border/50 justify-center">
                       {c.status === "open" && (
                         <button
                           onClick={() => updateStatus(c.id, "in_progress")}
-                          className="btn btn-secondary !py-2.5 !rounded-xl text-xs font-black shadow-sm"
+                          className="flex-1 md:w-32 h-11 rounded-xl bg-surface border border-border text-[11px] font-black uppercase tracking-widest hover:bg-surface-raised transition-colors"
                         >
                           Start Work
                         </button>
                       )}
                       <button
                         onClick={() => setResolveComplaint(c)}
-                        className="btn btn-primary !bg-emerald-600 hover:!bg-emerald-700 !py-2.5 !rounded-xl text-xs font-black shadow-lg shadow-emerald-100/50"
+                        className="flex-1 md:w-32 h-11 rounded-xl bg-emerald-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 hover:scale-[1.02] transition-all"
                       >
-                        Resolve
+                        Mark Fixed
                       </button>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* New Complaint Modal */}
+      {/* New Request Modal */}
       {showForm && (
-        <div className="modal-overlay z-50" onClick={() => setShowForm(false)}>
-          <div className="modal-content !max-w-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-handle" />
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowForm(false)} />
+          <div className="relative w-full max-w-xl bg-surface-raised rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 lg:p-10 border border-border shadow-2xl animate-in slide-in-from-bottom duration-300 overflow-y-auto max-h-[90vh]">
+            <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6 sm:hidden" />
+            
             <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                  <AlertTriangle className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white">Raise Request</h2>
-                  <p className="text-xs text-slate-500 font-semibold tracking-tight">Your issue will be tracked by the committee</p>
-                </div>
+              <div>
+                <h2 className="text-2xl font-black text-text-primary tracking-tight">Raise Request</h2>
+                <p className="text-sm font-medium text-text-secondary mt-1">Submit an issue for the committee to resolve</p>
               </div>
-              <button onClick={() => setShowForm(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                <X className="w-6 h-6 text-slate-400" />
+              <button onClick={() => setShowForm(false)} className="w-10 h-10 rounded-2xl hover:bg-surface flex items-center justify-center text-text-tertiary transition-colors">
+                <X className="w-6 h-6" strokeWidth={2.5} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Flat Number</label>
-                  <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.flatNumber} onChange={(e) => setForm({ ...form, flatNumber: e.target.value })} disabled={!isAdmin && !!user?.flatNumber} required />
+                  <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Flat Number</label>
+                  <input className="w-full h-12 bg-surface rounded-2xl px-4 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.flatNumber} onChange={(e) => setForm({ ...form, flatNumber: e.target.value })} disabled={!isAdmin && !!user?.flatNumber} required />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Reporter</label>
-                  <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.raisedBy} onChange={(e) => setForm({ ...form, raisedBy: e.target.value })} disabled={!isAdmin && !!user?.name} required />
+                  <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Reporter</label>
+                  <input className="w-full h-12 bg-surface rounded-2xl px-4 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.raisedBy} onChange={(e) => setForm({ ...form, raisedBy: e.target.value })} disabled={!isAdmin && !!user?.name} required />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Issue Subject</label>
-                <input className="input !bg-slate-50 dark:!bg-slate-900 font-bold" placeholder="Short title of the problem" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+                <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Issue Title</label>
+                <input className="w-full h-12 bg-surface rounded-2xl px-4 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" placeholder="Briefly what is the issue?" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Problem Details</label>
-                <textarea className="textarea !bg-slate-50 dark:!bg-slate-900 min-h-[120px] font-medium" placeholder="Describe what's wrong and where..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
+                <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Description</label>
+                <textarea className="w-full bg-surface rounded-2xl px-4 py-3 font-medium text-text-primary border border-transparent focus:border-primary outline-none transition-all min-h-[120px] resize-none" placeholder="Provide more details to help us fix it faster..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Type</label>
-                  <select className="select !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                    {categories.map((c) => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                  <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Category</label>
+                  <select className="w-full h-12 bg-surface rounded-2xl px-4 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                    {Object.keys(CATEGORY_ICONS).map((c) => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                    <option value="general">General</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Urgency</label>
-                  <select className="select !bg-slate-50 dark:!bg-slate-900 font-bold" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+                  <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Priority</label>
+                  <select className="w-full h-12 bg-surface rounded-2xl px-4 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
                     <option value="low">Routine</option>
                     <option value="medium">Standard</option>
-                    <option value="high">High Priority</option>
-                    <option value="urgent">Immediate Action</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
                   </select>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 btn btn-secondary h-14">Discard</button>
-                <button type="submit" disabled={saving} className="flex-[2] btn btn-primary h-14 shadow-xl shadow-primary/20">
-                  {saving ? "Submitting..." : "Submit Complaint"}
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-14 rounded-2xl font-bold text-text-secondary hover:bg-surface transition-colors">Discard</button>
+                <button type="submit" disabled={saving} className="flex-[2] h-14 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
+                  {saving ? "Submitting..." : "Raise Complaint"}
                 </button>
               </div>
             </form>
@@ -402,24 +425,24 @@ export default function ComplaintsPage() {
 
       {/* Resolve Modal */}
       {resolveComplaint && (
-        <div className="modal-overlay z-50" onClick={() => setResolveComplaint(null)}>
-          <div className="modal-content !max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-handle" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setResolveComplaint(null)} />
+          <div className="relative w-full max-w-md bg-surface-raised rounded-[2.5rem] p-8 border border-border shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white">Confirm Resolution</h2>
-                <p className="text-xs text-slate-500 font-semibold mt-1">Issue: {resolveComplaint.title}</p>
+                <h2 className="text-xl font-black text-text-primary tracking-tight">Resolve Issue</h2>
+                <p className="text-xs font-medium text-text-secondary mt-1">Closing: {resolveComplaint.title}</p>
               </div>
-              <button onClick={() => setResolveComplaint(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X className="w-6 h-6 text-slate-400" /></button>
+              <button onClick={() => setResolveComplaint(null)} className="w-10 h-10 rounded-2xl hover:bg-surface flex items-center justify-center text-text-tertiary transition-colors"><X className="w-5 h-5" strokeWidth={2.5} /></button>
             </div>
             <div className="space-y-6">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Closing Notes</label>
-                <textarea className="textarea !bg-slate-50 dark:!bg-slate-900 min-h-[120px] font-medium" placeholder="Briefly describe what was done to fix this..." value={resolution} onChange={(e) => setResolution(e.target.value)} />
+                <label className="text-xs font-black uppercase tracking-widest text-text-tertiary ml-1">Resolution Details</label>
+                <textarea className="w-full bg-surface rounded-2xl px-4 py-3 font-medium text-text-primary border border-transparent focus:border-primary outline-none transition-all min-h-[120px] resize-none" placeholder="What was done to fix this?" value={resolution} onChange={(e) => setResolution(e.target.value)} />
               </div>
               <div className="flex gap-4">
-                <button onClick={() => setResolveComplaint(null)} className="flex-1 btn btn-secondary h-12">Cancel</button>
-                <button onClick={() => updateStatus(resolveComplaint.id, "resolved", resolution)} disabled={!resolution.trim()} className="flex-[2] btn btn-success h-12">Mark Fixed</button>
+                <button onClick={() => setResolveComplaint(null)} className="flex-1 h-12 rounded-xl font-bold text-text-secondary hover:bg-surface transition-colors">Cancel</button>
+                <button onClick={() => updateStatus(resolveComplaint.id, "resolved", resolution)} disabled={!resolution.trim()} className="flex-[2] h-12 bg-emerald-500 text-white font-black rounded-xl shadow-lg shadow-emerald-500/20">Mark Fixed</button>
               </div>
             </div>
           </div>

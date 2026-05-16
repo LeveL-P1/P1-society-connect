@@ -18,14 +18,14 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (!loaded) {
     return (
-      <div className="h-[100dvh] w-full flex items-center justify-center bg-slate-100">
+      <div className="h-[100dvh] w-full flex items-center justify-center bg-surface">
         <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100">
+    <div className="flex h-screen overflow-hidden bg-surface">
       <Sidebar
         societyName={user.societyName}
         societyAddress={user.societyAddress}

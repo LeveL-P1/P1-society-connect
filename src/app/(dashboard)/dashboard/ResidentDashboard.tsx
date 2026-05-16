@@ -59,10 +59,10 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
                 {greeting()}, <br className="hidden lg:block" />
                 <span className="text-emerald-400">{user?.name?.split(" ")[0] || "Resident"}</span>
               </h1>
-              <p className="text-slate-300 mt-3 font-medium text-sm lg:text-base flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-text-tertiary" />
+              <p className="text-white/70 mt-3 font-medium text-sm lg:text-base flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-white/50" />
                 <span>{user?.societyName || "Smart Society"}</span>
-                {user?.flatNumber && <span className="w-1.5 h-1.5 rounded-full bg-surface0" />}
+                {user?.flatNumber && <span className="w-1.5 h-1.5 rounded-full bg-white/20" />}
                 {user?.flatNumber && <span className="text-white font-semibold">Unit {user.flatNumber}</span>}
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
                  {/* Resident Tag Restored */}
                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface-raised/95 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 whitespace-nowrap border border-border">
                    <UserCheck className="w-4 h-4 text-emerald-600" />
-                   <span className="text-[11px] font-bold text-slate-800 uppercase tracking-widest">Resident</span>
+                   <span className="text-[11px] font-bold text-text-primary uppercase tracking-widest">Resident</span>
                  </div>
                </div>
             </div>
@@ -89,7 +89,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
             
             {/* 1. My Bill */}
             <Link href="/my-bills" className="block col-span-1 group">
-              <div className="rounded-[1.5rem_2rem_1.5rem_2rem] p-4 bg-gradient-to-br from-emerald-400 to-emerald-600 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-emerald-400/50">
+              <div className="rounded-[1.5rem_2rem_1.5rem_2rem] p-4 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-900 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-emerald-400/50 dark:border-emerald-500/20">
                 {/* Decorative Dots */}
                 <svg width="40" height="40" viewBox="0 0 40 40" className="absolute top-2 right-2 text-white opacity-20 pointer-events-none">
                   <pattern id="dots-em" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="currentColor" /></pattern>
@@ -118,7 +118,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
 
             {/* 2. Working Staff */}
             <Link href="/staff" className="block col-span-1 group">
-              <div className="rounded-[2rem_1.5rem_2rem_1.5rem] p-4 bg-gradient-to-br from-blue-400 to-blue-600 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-blue-400/50">
+              <div className="rounded-[2rem_1.5rem_2rem_1.5rem] p-4 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-900 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-blue-400/50 dark:border-blue-500/20">
                 {/* Decorative Dots */}
                 <svg width="40" height="40" viewBox="0 0 40 40" className="absolute top-2 right-2 text-white opacity-20 pointer-events-none">
                   <pattern id="dots-bl" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="currentColor" /></pattern>
@@ -142,7 +142,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
 
             {/* 3. Deliveries */}
             <Link href="/my-visitors" className="block col-span-1 group">
-              <div className="rounded-[1.5rem_2rem_1.5rem_2rem] p-4 bg-gradient-to-br from-purple-400 to-purple-600 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-purple-400/50">
+              <div className="rounded-[1.5rem_2rem_1.5rem_2rem] p-4 bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-900 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-purple-400/50 dark:border-purple-500/20">
                 {/* Decorative Dots */}
                 <svg width="40" height="40" viewBox="0 0 40 40" className="absolute top-2 right-2 text-white opacity-20 pointer-events-none">
                   <pattern id="dots-pu" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="currentColor" /></pattern>
@@ -166,7 +166,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
 
             {/* 4. Emergency SOS */}
             <Link href="/emergency" className="block col-span-1 group">
-              <div className="rounded-[2rem_1.5rem_2rem_1.5rem] p-4 bg-gradient-to-br from-rose-400 to-rose-600 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-rose-400/50">
+              <div className="rounded-[2rem_1.5rem_2rem_1.5rem] p-4 bg-gradient-to-br from-rose-500 to-rose-600 dark:from-rose-600 dark:to-rose-900 card-float relative overflow-hidden group-hover:-translate-y-1 transition-transform duration-300 min-h-[110px] flex items-center border border-rose-400/50 dark:border-rose-500/20">
                 {/* Decorative Dots */}
                 <svg width="40" height="40" viewBox="0 0 40 40" className="absolute top-2 right-2 text-white opacity-20 pointer-events-none">
                   <pattern id="dots-ro" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="currentColor" /></pattern>
@@ -329,7 +329,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
                <div className="relative pl-4 border-l-2 border-border space-y-4">
                 {/* Timeline item 1 */}
                 <div className="relative">
-                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-white" />
+                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-surface-raised" />
                   <p className="text-[11px] font-bold text-primary uppercase tracking-wider mb-1">Today, 09:00 AM</p>
                   <h4 className="text-sm font-bold text-text-primary">Water Supply Maintenance</h4>
                   <p className="text-sm font-medium text-text-secondary mt-1 line-clamp-2">Water supply will be interrupted in Block A from 2 PM to 5 PM today for routine maintenance.</p>
@@ -337,7 +337,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
                 
                 {/* Timeline item 2 */}
                 <div className="relative">
-                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white" />
+                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-surface-raised" />
                   <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Yesterday, 14:30 PM</p>
                   <h4 className="text-sm font-bold text-text-primary">Annual General Meeting</h4>
                   <p className="text-sm font-medium text-text-secondary mt-1 line-clamp-2">Please join the AGM meeting this Sunday at the clubhouse. All owners are requested to attend.</p>
@@ -345,7 +345,7 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
 
                 {/* Timeline item 3 */}
                 <div className="relative hidden lg:block">
-                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-white" />
+                  <span className="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-slate-300 ring-4 ring-surface-raised" />
                   <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Oct 12, 2025</p>
                   <h4 className="text-sm font-bold text-text-primary">Pest Control Drive</h4>
                   <p className="text-sm font-medium text-text-secondary mt-1 line-clamp-2">Quarterly pest control services will be active across all common areas.</p>
@@ -442,9 +442,9 @@ export default function ResidentDashboard({ user, data, myBills }: any) {
                 alt="Car"
                 className="w-full h-full object-cover object-center"
               />
-              {/* Fade overlay from left and bottom */}
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0) 100%)' }} />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%)' }} />
+              {/* Fade overlay from left and bottom using variable surface color */}
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, var(--color-surface-raised) 0%, var(--color-surface-raised) 30%, transparent 100%)' }} />
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--color-surface-raised) 0%, transparent 60%)' }} />
             </div>
 
             {/* Content Layout */}

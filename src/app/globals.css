@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 
 @theme {
@@ -63,18 +64,11 @@
   --color-text-tertiary: #64748b;
   --color-text-disabled: #475569;
 
-  /* Automatic Tailwind Color Inversion for hardcoded classes */
-  --color-white: #1e293b;
-  --color-slate-50: #0f172a;
-  --color-slate-100: #1e293b;
-  --color-slate-200: #334155;
-  --color-slate-300: #475569;
-  --color-slate-400: #64748b;
-  --color-slate-500: #94a3b8;
-  --color-slate-600: #cbd5e1;
-  --color-slate-700: #e2e8f0;
-  --color-slate-800: #f1f5f9;
-  --color-slate-900: #f8fafc;
+  /* Semantic BG Overrides for Dark Mode */
+  --color-success-bg: rgba(22, 163, 74, 0.15);
+  --color-danger-bg: rgba(220, 38, 38, 0.15);
+  --color-warning-bg: rgba(217, 119, 6, 0.15);
+  --color-info-bg: rgba(2, 132, 199, 0.15);
 }
 
 /* ============================================
@@ -324,12 +318,26 @@
       0 0 0 1px rgba(14, 63, 168, 0.04);
     transition: box-shadow 0.3s ease, transform 0.3s ease;
   }
+  .dark .card-float {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 12px 32px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.05);
+  }
   .card-float:hover {
     box-shadow:
       0 2px 4px rgba(14, 63, 168, 0.05),
       0 8px 20px rgba(14, 63, 168, 0.10),
       0 20px 48px rgba(14, 63, 168, 0.08),
       0 0 0 1px rgba(14, 63, 168, 0.05);
+  }
+  .dark .card-float:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 20px rgba(0, 0, 0, 0.5),
+      0 20px 48px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
   /* ------ BADGES ------ */
@@ -863,4 +871,21 @@ main { animation: fadeIn 0.2s ease; }
 
 canvas {
   image-rendering: -webkit-optimize-contrast;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* MagicUI AnimatedThemeToggler — clip-path circle reveal */
+[data-magicui-theme-vt="active"]::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+[data-magicui-theme-vt="active"]::view-transition-new(root) {
+  z-index: 9999;
+  animation-duration: var(--magicui-theme-toggle-vt-duration, 400ms);
+  clip-path: var(--magicui-theme-vt-clip-from);
 }

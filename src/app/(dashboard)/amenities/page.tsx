@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@/lib/user-context";
 import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 import {
   Building2, Plus, Calendar, Clock, Users, X, Trash2,
   MapPin, IndianRupee, CheckCircle, ChevronLeft, ChevronRight,
@@ -209,29 +210,36 @@ export default function AmenitiesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0 pb-20">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary shadow-sm border border-primary/5">
-            <Building2 className="w-6 h-6 sm:w-8 sm:h-8" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">Amenity Booking</h1>
-            <p className="text-xs sm:text-sm text-text-secondary mt-0.5 font-medium">Reserve gym, hall, pool & more</p>
-          </div>
+    <div className="page-container max-w-7xl mx-auto space-y-8 pb-20">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-text-primary tracking-tight">Amenity Booking</h1>
+          <p className="text-text-secondary font-medium mt-1">Reserve gym, hall, pool & more</p>
         </div>
-        {isAdmin && (
-          <button onClick={() => setShowAddFacility(true)} className="btn btn-primary !rounded-xl px-5 py-2.5 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-primary/10">
-            <Plus className="w-4 h-4" /> Add Amenity
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <button onClick={() => setShowAddFacility(true)} className="btn btn-primary h-12 px-6 rounded-2xl shadow-lg shadow-primary/20 flex items-center gap-2">
+              <Plus className="w-5 h-5" strokeWidth={2.5} />
+              <span>Add Amenity</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2">
+      {/* Modern Floating Tabs */}
+      <div className="inline-flex items-center gap-2 bg-surface-raised p-2 rounded-[2rem] border border-border shadow-sm">
         {(["facilities", "my-bookings"] as const).map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${activeTab === tab ? "bg-primary text-white shadow-sm" : "bg-surface text-text-secondary hover:bg-primary/5"}`}>
+          <button 
+            key={tab} 
+            onClick={() => setActiveTab(tab)} 
+            className={cn(
+              "h-12 px-8 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all",
+              activeTab === tab 
+                ? "bg-text-primary text-surface shadow-lg shadow-text-primary/10" 
+                : "text-text-secondary hover:bg-surface hover:text-text-primary"
+            )}
+          >
             {tab === "facilities" ? "All Amenities" : "My Bookings"}
           </button>
         ))}
@@ -239,68 +247,82 @@ export default function AmenitiesPage() {
 
       {activeTab === "facilities" && (
         <>
-          {/* Date Navigator */}
-          <div className="flex items-center justify-center gap-4 bg-white rounded-2xl border border-border/50 p-3">
-            <button onClick={() => changeDate(-1)} className="p-2 rounded-xl hover:bg-surface transition-colors">
-              <ChevronLeft className="w-5 h-5 text-text-secondary" />
+          {/* Premium Date Navigator */}
+          <div className="flex items-center justify-between max-w-sm bg-surface-raised rounded-[2rem] border border-border p-2 card-float mb-6">
+            <button onClick={() => changeDate(-1)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-surface text-text-secondary transition-colors">
+              <ChevronLeft className="w-5 h-5" strokeWidth={2.5} />
             </button>
-            <div className="text-center">
-              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-transparent text-sm font-bold text-text-primary text-center cursor-pointer" />
-              <p className="text-[10px] text-text-tertiary font-medium mt-0.5">
-                {new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short" })}
+            <div className="text-center relative">
+              <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              <p className="text-sm font-black text-text-primary tracking-tight">
+                {new Date(selectedDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </p>
+              <p className="text-[10px] font-black text-text-tertiary uppercase tracking-widest mt-0.5">
+                {new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long" })}
               </p>
             </div>
-            <button onClick={() => changeDate(1)} className="p-2 rounded-xl hover:bg-surface transition-colors">
-              <ChevronRight className="w-5 h-5 text-text-secondary" />
+            <button onClick={() => changeDate(1)} className="w-12 h-12 flex items-center justify-center rounded-xl hover:bg-surface text-text-secondary transition-colors">
+              <ChevronRight className="w-5 h-5" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Facility Cards */}
           {loading ? (
-            <div className="flex items-center justify-center py-20"><div className="spinner !w-8 !h-8" /></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2].map(i => (
+                <div key={i} className="bg-surface-raised rounded-[2rem] p-6 border border-border animate-pulse h-48" />
+              ))}
+            </div>
           ) : facilities.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-border/50">
-              <Building2 className="w-10 h-10 text-text-tertiary mx-auto mb-4 opacity-20" />
-              <p className="text-text-primary font-bold">No amenities configured</p>
-              {isAdmin && <p className="text-xs text-text-secondary mt-1">Click &quot;Add Amenity&quot; to create one</p>}
+            <div className="bg-surface-raised rounded-[2.5rem] p-16 text-center border border-border card-float">
+              <div className="w-20 h-20 bg-surface rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-text-tertiary border border-border">
+                <Building2 className="w-10 h-10" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-black text-text-primary">No amenities configured</h3>
+              {isAdmin && <p className="text-text-secondary mt-2">Click "Add Amenity" to create one</p>}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {facilities.map((f) => (
-                <div key={f.id} className="bg-white rounded-2xl border border-border/50 overflow-hidden hover:shadow-sm transition-all group">
+                <div key={f.id} className="bg-surface-raised rounded-[2.5rem] border border-border p-6 card-float group hover:border-primary/20 transition-all flex flex-col">
                   {/* Card Header */}
-                  <div className="p-5 border-b border-border/30">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{getIcon(f.name)}</span>
-                        <div>
-                          <h3 className="text-base font-bold text-text-primary">{f.name}</h3>
-                          {f.description && <p className="text-xs text-text-secondary mt-0.5">{f.description}</p>}
-                        </div>
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-4xl shadow-sm border border-border/50 shrink-0">
+                        {getIcon(f.name)}
                       </div>
-                      <button onClick={() => openBooking(f)} className="btn btn-primary !rounded-xl !py-2 !px-4 text-xs font-bold opacity-80 group-hover:opacity-100 transition-opacity">
-                        Book
-                      </button>
+                      <div>
+                        <h3 className="text-xl font-black text-text-primary tracking-tight">{f.name}</h3>
+                        {f.description && <p className="text-sm font-medium text-text-secondary mt-1">{f.description}</p>}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-3">
-                      {f.capacity && (
-                        <span className="text-[10px] font-bold text-text-tertiary flex items-center gap-1">
-                          <Users className="w-3 h-3" /> {f.capacity} capacity
-                        </span>
-                      )}
-                      <span className="text-[10px] font-bold text-text-tertiary flex items-center gap-1">
-                        <IndianRupee className="w-3 h-3" /> {f.ratePerHour > 0 ? `₹${f.ratePerHour}/hr` : "Free"}
-                      </span>
-                      <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                        <Calendar className="w-3 h-3" /> {f.bookings?.filter((b) => b.status === "confirmed").length || 0} booked today
-                      </span>
+                    <button onClick={() => openBooking(f)} className="btn btn-primary h-10 px-5 rounded-xl text-xs font-black shadow-md shadow-primary/20 opacity-90 group-hover:opacity-100 transition-opacity">
+                      Book
+                    </button>
+                  </div>
+                  
+                  {/* Stats Row */}
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6 p-4 bg-surface rounded-2xl border border-border">
+                    {f.capacity && (
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-text-tertiary" strokeWidth={2.5} />
+                        <span className="text-xs font-bold text-text-secondary">{f.capacity} Max</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <IndianRupee className="w-4 h-4 text-text-tertiary" strokeWidth={2.5} />
+                      <span className="text-xs font-bold text-text-secondary">{f.ratePerHour > 0 ? `₹${f.ratePerHour}/hr` : "Free"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-primary" strokeWidth={2.5} />
+                      <span className="text-xs font-bold text-primary">{f.bookings?.filter((b) => b.status === "confirmed").length || 0} Booked Today</span>
                     </div>
                   </div>
 
                   {/* Time Slots Grid */}
-                  <div className="p-4">
-                    <p className="text-[9px] font-bold text-text-tertiary uppercase tracking-wider mb-2">Availability</p>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="mt-auto">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-text-tertiary mb-3">Availability</p>
+                    <div className="flex flex-wrap gap-2">
                       {timeSlots.map((t) => {
                         const booked = isSlotBooked(f, t);
                         const booking = getSlotBooking(f, t);
@@ -308,11 +330,12 @@ export default function AmenitiesPage() {
                           <div
                             key={t}
                             title={booked && booking ? `Booked by Flat ${booking.flatNumber}` : "Available"}
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-default ${
+                            className={cn(
+                              "px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-default border",
                               booked
-                                ? "bg-red-500/10 text-red-600 line-through"
-                                : "bg-green-500/10 text-green-700"
-                            }`}
+                                ? "bg-rose-50 dark:bg-rose-900/10 text-rose-600 border-rose-100 dark:border-rose-900/30 opacity-70"
+                                : "bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30"
+                            )}
                           >
                             {formatTime(t)}
                           </div>
@@ -329,47 +352,57 @@ export default function AmenitiesPage() {
 
       {/* My Bookings Tab */}
       {activeTab === "my-bookings" && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {myBookings.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-border/50">
-              <Calendar className="w-10 h-10 text-text-tertiary mx-auto mb-4 opacity-20" />
-              <p className="text-text-primary font-bold">No bookings yet</p>
-              <p className="text-xs text-text-secondary mt-1">Book an amenity to see your reservations here</p>
+            <div className="bg-surface-raised rounded-[2.5rem] p-16 text-center border border-border card-float">
+              <div className="w-20 h-20 bg-surface rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-text-tertiary border border-border">
+                <Calendar className="w-10 h-10" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-xl font-black text-text-primary">No bookings yet</h3>
+              <p className="text-text-secondary mt-2">Book an amenity to see your reservations here</p>
             </div>
           ) : (
             myBookings.map((b) => (
-              <div key={b.id} className="bg-white rounded-2xl border border-border/50 p-4 sm:p-5 flex items-center justify-between gap-4 hover:shadow-sm transition-all">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <span className="text-2xl">{getIcon(b.facility?.name || "")}</span>
-                  <div>
-                    <h3 className="text-sm font-bold text-text-primary">{b.facility?.name}</h3>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] font-bold text-text-tertiary flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(b.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+              <div key={b.id} className="bg-surface-raised rounded-[2rem] border border-border p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 card-float group hover:border-primary/20 transition-all">
+                <div className="flex items-start gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent flex items-center justify-center text-3xl shrink-0 border border-border/50">
+                    {getIcon(b.facility?.name || "")}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-black text-text-primary tracking-tight">{b.facility?.name}</h3>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                      <span className="text-xs font-bold text-text-secondary flex items-center gap-1.5 bg-surface px-3 py-1.5 rounded-lg border border-border">
+                        <Calendar className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
+                        {new Date(b.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
-                      <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {formatTime(b.startTime)} — {formatTime(b.endTime)}
+                      <span className="text-xs font-bold text-text-secondary flex items-center gap-1.5 bg-surface px-3 py-1.5 rounded-lg border border-border">
+                        <Clock className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} /> {formatTime(b.startTime)} — {formatTime(b.endTime)}
                       </span>
                       {b.amount > 0 && (
-                        <span className="text-[10px] font-bold text-emerald-600">₹{b.amount}</span>
+                        <span className="text-xs font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/10 px-3 py-1.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                          ₹{b.amount}
+                        </span>
                       )}
                     </div>
-                    {b.purpose && <p className="text-[10px] text-text-tertiary mt-1">{b.purpose}</p>}
+                    {b.purpose && <p className="text-[11px] font-bold text-text-tertiary mt-3 uppercase tracking-widest">{b.purpose}</p>}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                
+                <div className="flex items-center gap-3 shrink-0 bg-surface/50 p-4 rounded-2xl md:bg-transparent md:p-0 md:rounded-none">
                   {b.status === "confirmed" && new Date(b.date) >= new Date(new Date().toDateString()) ? (
                     <>
-                      <span className="text-[9px] font-bold text-green-600 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> Confirmed
+                      <span className="text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4" strokeWidth={2.5} /> Confirmed
                       </span>
-                      <button onClick={() => cancelBooking(b.id)} className="p-2 rounded-xl hover:bg-red-50 text-red-500 transition-colors" title="Cancel">
-                        <Trash2 className="w-4 h-4" />
+                      <div className="w-px h-6 bg-border mx-2 hidden md:block" />
+                      <button onClick={() => cancelBooking(b.id)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors" title="Cancel Booking">
+                        <Trash2 className="w-4 h-4" strokeWidth={2.5} />
                       </button>
                     </>
                   ) : (
-                    <span className="text-[9px] font-bold text-text-tertiary">{b.status === "cancelled" ? "Cancelled" : "Completed"}</span>
+                    <span className="text-[10px] font-black text-text-tertiary uppercase tracking-widest bg-surface px-3 py-1.5 rounded-lg border border-border">
+                      {b.status === "cancelled" ? "Cancelled" : "Completed"}
+                    </span>
                   )}
                 </div>
               </div>

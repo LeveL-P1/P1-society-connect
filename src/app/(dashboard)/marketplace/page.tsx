@@ -102,112 +102,175 @@ export default function MarketplacePage() {
   const filtered = filter === "all" ? listings : listings.filter(l => l.category === filter);
 
   return (
-    <div className="space-y-6">
-      <div className="page-header flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <ShoppingBag className="w-6 h-6 text-primary" />
-          <div>
-            <h1 className="page-title">Buy & Sell</h1>
-            <p className="text-sm text-text-secondary mt-0.5">
-              Community marketplace — buy, sell, or exchange items with neighbours
-            </p>
-          </div>
+    <div className="page-container max-w-7xl mx-auto space-y-8 pb-20">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-text-primary tracking-tight">Buy & Sell</h1>
+          <p className="text-text-secondary font-medium mt-1">Community marketplace — exchange items with neighbours</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} className="btn btn-primary btn-sm flex items-center gap-2">
-          {showForm ? <><X className="w-4 h-4" /> Cancel</> : <><Plus className="w-4 h-4" /> Post Listing</>}
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowForm(true)} className="btn btn-primary h-12 px-6 rounded-2xl shadow-lg shadow-primary/20 flex items-center gap-2">
+            <Plus className="w-5 h-5" strokeWidth={2.5} />
+            <span>Post Listing</span>
+          </button>
+        </div>
       </div>
 
-      {showForm && (
-        <div className="card animate-in fade-in zoom-in-95 duration-200">
-          <h3 className="font-semibold text-sm mb-4">Post an Item</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="label">Title *</label>
-              <input className="input" placeholder="e.g. L-shaped Sofa Set" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
-            </div>
-            <div className="md:col-span-2">
-              <label className="label">Description</label>
-              <textarea className="input min-h-[80px]" placeholder="Describe the item, its condition, and why you're selling..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Price (₹)</label>
-              <input type="number" className="input" placeholder="Leave empty for Free / Exchange" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Category</label>
-              <select className="select" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Condition</label>
-              <select className="select" value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}>
-                {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Contact Phone</label>
-              <input className="input" placeholder="Optional" value={form.contactPhone} onChange={e => setForm({ ...form, contactPhone: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Flat Number</label>
-              <input className="input" placeholder="e.g. A-101" value={form.flatNumber} onChange={e => setForm({ ...form, flatNumber: e.target.value })} />
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end gap-2">
-            <button onClick={() => setShowForm(false)} className="btn btn-secondary">Cancel</button>
-            <button onClick={handlePost} className="btn btn-primary">Post Listing</button>
-          </div>
-        </div>
-      )}
-
-      {/* Category Filter */}
-      <div className="flex gap-2 flex-wrap">
-        <button onClick={() => setFilter("all")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter === "all" ? "bg-primary text-white" : "bg-surface border border-border text-text-secondary hover:bg-primary/10"}`}>
-          All
+      {/* Modern Filter Pills */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+        <button 
+          onClick={() => setFilter("all")} 
+          className={`h-10 px-5 rounded-xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+            filter === "all" ? "bg-text-primary text-surface shadow-md" : "bg-surface-raised text-text-secondary border border-border hover:bg-surface"
+          }`}
+        >
+          All Items
         </button>
         {CATEGORIES.map(c => (
-          <button key={c.value} onClick={() => setFilter(c.value)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter === c.value ? "bg-primary text-white" : "bg-surface border border-border text-text-secondary hover:bg-primary/10"}`}>
+          <button 
+            key={c.value} 
+            onClick={() => setFilter(c.value)} 
+            className={`h-10 px-5 rounded-xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${
+              filter === c.value ? "bg-text-primary text-surface shadow-md" : "bg-surface-raised text-text-secondary border border-border hover:bg-surface"
+            }`}
+          >
             {c.label}
           </button>
         ))}
       </div>
 
+      {/* Listings Grid */}
       {loading ? (
-        <div className="flex justify-center py-12"><div className="spinner" /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => <div key={i} className="bg-surface-raised rounded-[2rem] h-64 border border-border animate-pulse card-float" />)}
+        </div>
       ) : filtered.length === 0 ? (
-        <div className="card p-12 text-center text-text-secondary">
-          <Package className="w-12 h-12 mx-auto mb-3 text-border" />
-          <p>No listings found. Post something to get started!</p>
+        <div className="bg-surface-raised rounded-[2.5rem] p-16 text-center border border-border card-float">
+          <div className="w-20 h-20 bg-surface rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-text-tertiary border border-border">
+            <Package className="w-10 h-10" strokeWidth={1.5} />
+          </div>
+          <h3 className="text-xl font-black text-text-primary">No listings found</h3>
+          <p className="text-text-secondary mt-2">Be the first to post something in this category!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(l => (
-            <div key={l.id} className="card hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold text-base">{l.title}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs uppercase font-medium bg-surface px-2 py-0.5 rounded-md border border-border">{l.category}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${l.condition === "new" ? "bg-success/10 text-success" : l.condition === "like_new" ? "bg-primary/10 text-primary" : "bg-surface border border-border text-text-secondary"}`}>
+            <div key={l.id} className="bg-surface-raised rounded-[2rem] border border-border p-6 card-float group hover:border-primary/20 transition-all flex flex-col">
+              <div className="flex justify-between items-start mb-4 gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-black text-text-primary leading-tight truncate">{l.title}</h3>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="text-[9px] uppercase font-black tracking-widest text-text-tertiary bg-surface px-2.5 py-1 rounded-lg border border-border">
+                      {l.category}
+                    </span>
+                    <span className={`text-[9px] uppercase font-black tracking-widest px-2.5 py-1 rounded-lg border ${
+                      l.condition === "new" ? "bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30" : 
+                      l.condition === "like_new" ? "bg-blue-50 dark:bg-blue-900/10 text-blue-600 border-blue-100 dark:border-blue-900/30" : 
+                      "bg-surface text-text-secondary border-border"
+                    }`}>
                       {CONDITIONS.find(c => c.value === l.condition)?.label || l.condition}
                     </span>
                   </div>
                 </div>
-                <Tag className="w-4 h-4 text-text-secondary" />
-              </div>
-              {l.description && <p className="text-sm text-text-secondary mb-3 line-clamp-2">{l.description}</p>}
-              <div className="flex justify-between items-end mt-auto pt-3 border-t border-border">
-                <div>
-                  <p className="text-lg font-bold text-primary">{l.price ? formatCurrency(l.price) : "Free"}</p>
-                  {l.flatNumber && <p className="text-xs text-text-secondary">Flat: {l.flatNumber}</p>}
+                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary shrink-0">
+                  <Tag className="w-4 h-4" strokeWidth={2.5} />
                 </div>
-                <button onClick={() => handleMarkSold(l.id)} className="text-xs text-success hover:underline font-medium">Mark Sold</button>
               </div>
-              <p className="text-[10px] text-text-tertiary mt-2">{new Date(l.createdAt).toLocaleDateString("en-IN")}</p>
+              
+              {l.description && (
+                <p className="text-sm font-medium text-text-secondary mb-6 line-clamp-3 leading-relaxed">
+                  {l.description}
+                </p>
+              )}
+              
+              <div className="mt-auto pt-5 border-t border-border/50 flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-1">Asking Price</p>
+                  <p className="text-2xl font-black text-primary tracking-tighter">
+                    {l.price ? formatCurrency(l.price) : "Free"}
+                  </p>
+                </div>
+                {l.status !== "sold" && (
+                  <button onClick={() => handleMarkSold(l.id)} className="text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 hover:underline">
+                    Mark Sold
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between mt-4 bg-surface px-4 py-3 rounded-xl border border-border">
+                {l.flatNumber ? (
+                  <p className="text-xs font-bold text-text-secondary">Flat {l.flatNumber}</p>
+                ) : <div />}
+                <p className="text-[10px] font-bold text-text-tertiary">{new Date(l.createdAt).toLocaleDateString("en-IN")}</p>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Premium Post Listing Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="absolute inset-0" onClick={() => setShowForm(false)} />
+          <div className="relative w-full max-w-2xl bg-surface-raised rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 lg:p-8 border border-border shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-1.5 bg-border rounded-full mx-auto mb-6 sm:hidden" />
+            
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-black text-text-primary tracking-tight">Post a Listing</h2>
+                <p className="text-sm font-medium text-text-secondary mt-1">Sell or give away items to your neighbours</p>
+              </div>
+              <button onClick={() => setShowForm(false)} className="w-10 h-10 rounded-2xl hover:bg-surface flex items-center justify-center text-text-tertiary transition-colors">
+                <X className="w-5 h-5" strokeWidth={2.5} />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Title *</label>
+                <input className="w-full h-14 bg-surface rounded-2xl px-5 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all placeholder:font-medium" placeholder="What are you selling?" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Description</label>
+                <textarea className="w-full bg-surface rounded-2xl px-5 py-4 font-medium text-text-primary border border-transparent focus:border-primary outline-none transition-all min-h-[100px] resize-none" placeholder="Add details about condition, age, reason for selling..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Price (₹)</label>
+                  <input type="number" className="w-full h-14 bg-surface rounded-2xl px-5 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all placeholder:font-medium" placeholder="Leave empty for Free" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Category</label>
+                  <select className="w-full h-14 bg-surface rounded-2xl px-5 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                    {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Condition</label>
+                  <select className="w-full h-14 bg-surface rounded-2xl px-5 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })}>
+                    {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Flat Number</label>
+                  <input className="w-full h-14 bg-surface rounded-2xl px-5 font-bold text-text-primary border border-transparent focus:border-primary outline-none transition-all" placeholder="E.g., A-101" value={form.flatNumber} onChange={e => setForm({ ...form, flatNumber: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-14 rounded-2xl font-bold text-text-secondary hover:bg-surface transition-colors">Discard</button>
+                <button type="button" onClick={handlePost} className="flex-[2] h-14 rounded-2xl bg-primary text-white font-black shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform">
+                  Publish Listing
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

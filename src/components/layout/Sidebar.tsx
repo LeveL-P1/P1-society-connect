@@ -185,7 +185,7 @@ export default function Sidebar({
         >
 
         {/* Society header */}
-        <div className={`flex items-center border-b border-border bg-blue-50 dark:bg-blue-900/20 flex-shrink-0 transition-all duration-150 ${isExpanded ? "p-4 gap-3" : "py-4 justify-center"}`}>
+        <div className={`flex items-center border-b border-border bg-primary/50 dark:bg-blue-900/20 flex-shrink-0 transition-all duration-150 ${isExpanded ? "p-4 gap-3" : "py-4 justify-center"}`}>
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-lg shadow-primary/10 flex-shrink-0">
             <Building2 className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
@@ -283,10 +283,10 @@ export default function Sidebar({
         </nav>
 
         {/* Footer — logout */}
-        <div className={`flex-shrink-0 border-t border-border bg-surface-raised transition-all duration-150 ${isExpanded ? "p-4" : "p-3"}`}>
+        <div className={`flex-shrink-0 border-t border-rose-500/20 bg-rose-600  hover:bg-rose-700 transition-all duration-150 ${isExpanded ? "p-4" : "p-3"}`}>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-500/20 transition-all duration-150 group overflow-hidden ${isExpanded ? "px-3 py-2.5 gap-3" : "justify-center p-3"}`}
+            className={`w-full flex items-center rounded-xl text-white transition-all duration-150 group overflow-hidden ${isExpanded ? "px-3 py-2.5 gap-3" : "justify-center p-3"}`}
             title={!isExpanded ? "Sign Out" : undefined}
           >
             <LogOut className={`w-[19px] h-[19px] flex-shrink-0 transition-transform duration-300 ease-in-out ${isExpanded ? "group-hover:translate-x-[4.5rem]" : "group-hover:translate-x-1"}`} strokeWidth={2.5} />

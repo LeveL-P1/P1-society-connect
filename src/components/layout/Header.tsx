@@ -96,8 +96,11 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white dark:bg-slate-950 border-b border-border lg:bg-transparent lg:border-none pointer-events-none">
-      <div className="flex items-center justify-between gap-3 px-4 lg:px-6 h-[72px] lg:h-[88px]">
+    <header className="sticky top-0 z-30 w-full h-0 overflow-visible pointer-events-none">
+      {/* Mobile-only solid background */}
+      <div className="absolute inset-x-0 top-0 h-[72px] bg-white dark:bg-slate-950 border-b border-border lg:hidden pointer-events-auto" />
+      
+      <div className="relative flex items-center justify-between gap-3 px-4 lg:px-6 h-[72px] lg:h-[88px]">
         {/* Left — hamburger + brand (Mobile Only) */}
         <div className="flex items-center gap-3 min-w-0 lg:hidden pointer-events-auto">
           <button

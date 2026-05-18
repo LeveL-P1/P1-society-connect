@@ -263,14 +263,7 @@ export default function SettingsPage() {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          transition={{ duration: 0.2 }}
-        >
+      <div>
           {tab === "profile" && (
             <div className="space-y-8">
               {joinCode && (
@@ -519,8 +512,7 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+      </div>
 
       {/* Flat Details Modal */}
       {selectedFlat && (

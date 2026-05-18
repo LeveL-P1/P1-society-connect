@@ -19,7 +19,7 @@ async function test(name: string, url: string | undefined) {
     const client = await pool.connect();
     console.log(`${name} connected successfully!`);
     client.release();
-  } catch (err) {
+  } catch (err: any) {
     console.error(`${name} failed:`, err.message);
   } finally {
     await pool.end();

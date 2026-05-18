@@ -204,7 +204,7 @@ export default function MembersPage() {
                         <h3 className="text-lg font-black text-slate-900 dark:text-white truncate group-hover:text-primary transition-colors">
                           {m.ownerName}
                         </h3>
-                        <StatusBadge status={m.isActive ? "active" : "inactive"} size="sm" />
+                        <StatusBadge status={m.isActive ? "active" : "inactive"} />
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                         <p className="text-xs text-slate-500 font-bold flex items-center gap-1.5">

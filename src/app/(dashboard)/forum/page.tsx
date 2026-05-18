@@ -26,58 +26,218 @@ export default function ForumPage() {
   const filtered = threads.filter(t=>!search||t.title.toLowerCase().includes(search.toLowerCase()));
 
   if(sel) return (
-    <div className="max-w-3xl mx-auto space-y-4 animate-in fade-in duration-300 px-4 sm:px-6 lg:px-0 pb-20">
-      <button onClick={()=>setSel(null)} className="flex items-center gap-2 text-xs font-bold text-primary hover:underline py-2"><ArrowLeft className="w-4 h-4" /> Back</button>
-      <div className="bg-white rounded-[1.5rem] border border-border/50 p-6">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary font-bold text-sm">{sel.author.name.charAt(0)}</div>
-          <div className="flex-1"><h2 className="text-lg font-bold">{sel.title}</h2><div className="flex items-center gap-2 mt-1"><span className="text-xs font-semibold">{sel.author.name}</span><span className="text-[9px] bg-surface text-text-tertiary px-1.5 py-0.5 rounded">{sel.author.role}</span><span className="text-[10px] text-text-tertiary">· {timeAgo(sel.createdAt)}</span></div></div>
-          <span className={`text-[9px] font-bold px-2 py-1 rounded-full ${catClr[sel.category]||"bg-gray-50 text-gray-600"}`}>{sel.category}</span>
+    <div className="page-container max-w-4xl mx-auto space-y-6 pb-20">
+      <button onClick={() => setSel(null)} className="h-10 px-4 bg-surface rounded-[1rem] font-black uppercase tracking-widest text-[10px] text-text-secondary border border-border hover:bg-surface-raised transition-colors flex items-center shrink-0">
+        <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={2.5} /> Back to Discussions
+      </button>
+
+      <div className="card-float bg-surface-raised rounded-[2rem] border border-border p-6 sm:p-8">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shrink-0 shadow-sm">
+            {sel.author.name.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-black text-text-primary tracking-tight">{sel.title}</h2>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-sm font-bold text-text-secondary">{sel.author.name}</span>
+              <span className="text-[9px] font-black uppercase tracking-widest bg-surface text-text-tertiary px-2 py-1 rounded-md border border-border">{sel.author.role}</span>
+              <span className="text-[10px] font-black text-text-tertiary flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(sel.createdAt)}</span>
+            </div>
+          </div>
+          <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-[1rem] shadow-sm ${catClr[sel.category] || "bg-gray-100 text-gray-700"}`}>
+            {sel.category}
+          </span>
         </div>
-        <p className="text-sm text-text-secondary whitespace-pre-wrap leading-relaxed">{sel.content}</p>
-        <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/30 text-[10px] text-text-tertiary"><span className="flex items-center gap-1"><Eye className="w-3 h-3" />{sel.views}</span><span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />{sel.replies.length}</span></div>
+        
+        <p className="text-base font-medium text-text-primary whitespace-pre-wrap leading-relaxed p-6 bg-surface rounded-[1.5rem] border border-border/50">
+          {sel.content}
+        </p>
+
+        <div className="flex items-center gap-6 mt-6 pt-5 border-t border-border/50 text-xs font-bold text-text-tertiary uppercase tracking-widest">
+          <span className="flex items-center gap-2"><Eye className="w-4 h-4" /> {sel.views} Views</span>
+          <span className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> {sel.replies.length} Replies</span>
+        </div>
       </div>
-      <div className="space-y-2">{sel.replies.map(r=>(
-        <div key={r.id} className="bg-white rounded-2xl border border-border/40 p-4 ml-6">
-          <div className="flex items-center gap-2 mb-2"><div className="w-7 h-7 rounded-lg bg-primary/5 flex items-center justify-center text-primary font-bold text-[10px]">{r.author.name.charAt(0)}</div><span className="text-xs font-bold">{r.author.name}</span><span className="text-[9px] bg-surface text-text-tertiary px-1.5 py-0.5 rounded">{r.author.role}</span><span className="text-[10px] text-text-tertiary ml-auto">{timeAgo(r.createdAt)}</span></div>
-          <p className="text-sm text-text-secondary whitespace-pre-wrap">{r.content}</p>
+
+      <div className="space-y-4">
+        {sel.replies.map(r => (
+          <div key={r.id} className="card-float bg-surface-raised rounded-[1.5rem] border border-border p-5 ml-4 sm:ml-12 relative before:content-[''] before:absolute before:-left-6 before:top-8 before:w-6 before:h-px before:bg-border">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-sm shrink-0">
+                {r.author.name.charAt(0)}
+              </div>
+              <span className="text-sm font-bold text-text-primary">{r.author.name}</span>
+              <span className="text-[9px] font-black uppercase tracking-widest bg-surface text-text-tertiary px-2 py-1 rounded-md border border-border">{r.author.role}</span>
+              <span className="text-[10px] font-black text-text-tertiary ml-auto">{timeAgo(r.createdAt)}</span>
+            </div>
+            <p className="text-sm font-medium text-text-secondary whitespace-pre-wrap pl-11">{r.content}</p>
+          </div>
+        ))}
+      </div>
+
+      {!sel.isLocked && (
+        <div className="bg-surface-raised rounded-[2rem] border border-border p-4 flex gap-4 items-end sticky bottom-6 shadow-2xl card-float">
+          <textarea 
+            className="flex-1 w-full bg-surface border border-border rounded-[1.5rem] px-5 py-4 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm resize-none min-h-[60px] max-h-32" 
+            placeholder="Write a reply..." 
+            value={reply} 
+            onChange={e => setReply(e.target.value)} 
+            rows={1} 
+          />
+          <button 
+            onClick={postR} 
+            disabled={sendR || !reply.trim()} 
+            className="h-14 px-8 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-transform active:scale-95 disabled:opacity-50 flex items-center shrink-0"
+          >
+            <Send className="w-4 h-4 mr-2" strokeWidth={2.5} /> Reply
+          </button>
         </div>
-      ))}</div>
-      {!sel.isLocked && <div className="bg-white rounded-2xl border border-border/50 p-4 flex gap-3 items-end sticky bottom-4"><textarea className="flex-1 bg-surface border border-border/40 rounded-xl px-4 py-3 text-sm resize-none min-h-[44px] max-h-32 font-medium" placeholder="Write a reply..." value={reply} onChange={e=>setReply(e.target.value)} rows={1} /><button onClick={postR} disabled={sendR||!reply.trim()} className="btn btn-primary !rounded-xl !py-3 !px-5 text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"><Send className="w-3.5 h-3.5" />Reply</button></div>}
+      )}
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 px-4 sm:px-6 lg:px-0 pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4"><div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-violet-500/5 flex items-center justify-center text-violet-600 shadow-sm border border-violet-500/5"><MessageSquare className="w-6 h-6 sm:w-8 sm:h-8" /></div><div><h1 className="text-xl sm:text-2xl font-bold tracking-tight">Discussion Forum</h1><p className="text-xs sm:text-sm text-text-secondary mt-1 font-medium">{threads.length} discussions</p></div></div>
-        <button onClick={()=>setShowNew(true)} className="btn btn-primary !rounded-xl px-6 py-2.5 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-primary/10"><Plus className="w-4 h-4" />New Discussion</button>
+    <div className="page-container max-w-5xl mx-auto space-y-8 pb-20">
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black text-text-primary tracking-tight">Discussion Forum</h1>
+          <p className="text-text-secondary font-medium mt-1">{threads.length} active community discussions</p>
+        </div>
+        <button 
+          onClick={() => setShowNew(true)} 
+          className="h-14 px-8 bg-primary hover:bg-primary-dark text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-transform active:scale-95 flex items-center shrink-0"
+        >
+          <Plus className="w-5 h-5 mr-2" strokeWidth={2.5} /> New Discussion
+        </button>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" /><input className="input !rounded-xl !bg-surface/50 !border-border/60 !pl-11 w-full text-xs font-semibold" placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} /></div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1">{cats.map(c=><button key={c.key} onClick={()=>setCat(c.key)} className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${cat===c.key?"bg-primary text-white":"bg-surface text-text-secondary hover:bg-primary/5"}`}>{c.label}</button>)}</div>
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" strokeWidth={2.5} />
+          <input 
+            className="w-full h-14 bg-surface-raised border border-border rounded-[1.5rem] pl-14 pr-4 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm" 
+            placeholder="Search discussions..." 
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+          />
+        </div>
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
+          {cats.map(c => (
+            <button 
+              key={c.key} 
+              onClick={() => setCat(c.key)} 
+              className={`h-14 px-6 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border shrink-0 ${
+                cat === c.key 
+                  ? "bg-text-primary text-surface border-text-primary shadow-lg shadow-text-primary/10" 
+                  : "bg-surface-raised text-text-tertiary border-border hover:border-primary/30"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
-      {loading||loadT?<div className="flex items-center justify-center py-20"><div className="spinner !w-8 !h-8" /></div>:filtered.length===0?<div className="card text-center py-24 bg-surface/30 border-dashed border-2"><MessageSquare className="w-10 h-10 text-text-tertiary mx-auto mb-4 opacity-20" /><p className="font-bold">No discussions yet</p></div>:(
-        <div className="space-y-2">{filtered.map(t=>(
-          <button key={t.id} onClick={()=>openT(t.id)} className="w-full bg-white rounded-2xl border border-border/50 p-4 sm:p-5 text-left hover:shadow-sm hover:border-primary/20 transition-all">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary font-bold text-sm shrink-0">{t.author.name.charAt(0)}</div>
-              <div className="flex-1 min-w-0"><div className="flex items-center gap-2">{t.isPinned&&<Pin className="w-3 h-3 text-amber-500 shrink-0" />}<h4 className="text-sm font-bold truncate">{t.title}</h4></div><p className="text-xs text-text-secondary mt-0.5 line-clamp-1">{t.content}</p>
-              <div className="flex items-center gap-3 mt-2"><span className="text-[10px] font-semibold">{t.author.name}</span><span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${catClr[t.category]||"bg-gray-50"}`}>{t.category}</span><span className="text-[10px] text-text-tertiary flex items-center gap-1"><Clock className="w-3 h-3" />{timeAgo(t.lastActivityAt)}</span></div></div>
-              <div className="flex flex-col items-center gap-1 shrink-0 text-text-tertiary"><div className="flex items-center gap-1 text-[10px]"><MessageCircle className="w-3 h-3" />{t._count.replies}</div><div className="flex items-center gap-1 text-[10px]"><Eye className="w-3 h-3" />{t.views}</div></div>
-            </div>
-          </button>
-        ))}</div>
+
+      {/* Thread List */}
+      {loading || loadT ? (
+        <div className="flex items-center justify-center py-20"><div className="spinner !w-10 !h-10" /></div>
+      ) : filtered.length === 0 ? (
+        <div className="bg-surface-raised rounded-[2.5rem] p-16 text-center border border-dashed border-border card-float">
+          <div className="w-20 h-20 bg-surface rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-text-tertiary border border-border">
+            <MessageSquare className="w-10 h-10 opacity-50" strokeWidth={1.5} />
+          </div>
+          <h3 className="text-xl font-black text-text-primary tracking-tight">No discussions found</h3>
+          <p className="text-text-secondary mt-2 max-w-sm mx-auto">Try adjusting your filters or start a new topic.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map(t => (
+            <button 
+              key={t.id} 
+              onClick={() => openT(t.id)} 
+              className="w-full card-float bg-surface-raised rounded-[2rem_1.5rem_2rem_1.5rem] border border-border p-5 sm:p-6 text-left hover:border-primary/20 transition-all group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                {t.author.name.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  {t.isPinned && <Pin className="w-4 h-4 text-amber-500 shrink-0" strokeWidth={2.5} />}
+                  <h4 className="text-lg font-black text-text-primary truncate group-hover:text-primary transition-colors">{t.title}</h4>
+                </div>
+                <p className="text-sm font-medium text-text-secondary line-clamp-1 mb-3">{t.content}</p>
+                <div className="flex items-center flex-wrap gap-3">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-text-primary">{t.author.name}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-[1rem] shadow-sm ${catClr[t.category] || "bg-gray-100 text-gray-700"}`}>{t.category}</span>
+                  <span className="text-[10px] font-black text-text-tertiary flex items-center gap-1 uppercase tracking-widest"><Clock className="w-3 h-3" strokeWidth={2.5} /> {timeAgo(t.lastActivityAt)}</span>
+                </div>
+              </div>
+              <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-2 shrink-0 pt-4 sm:pt-0 border-t border-border sm:border-0 mt-4 sm:mt-0 w-full sm:w-auto">
+                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-text-tertiary bg-surface px-3 py-1.5 rounded-[1rem] border border-border">
+                  <MessageCircle className="w-3.5 h-3.5" strokeWidth={2.5} /> {t._count.replies} Replies
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-text-tertiary bg-surface px-3 py-1.5 rounded-[1rem] border border-border">
+                  <Eye className="w-3.5 h-3.5" strokeWidth={2.5} /> {t.views} Views
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
       )}
-      {showNew&&<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center" onClick={()=>setShowNew(false)}><div className="bg-white w-full max-w-lg sm:rounded-[2rem] rounded-t-[2rem] overflow-hidden shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300" onClick={e=>e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-border/30"><h3 className="text-lg font-bold">New Discussion</h3><button onClick={()=>setShowNew(false)} className="p-2 rounded-full hover:bg-surface"><X className="w-5 h-5" /></button></div>
-        <form onSubmit={createT} className="p-5 space-y-4">
-          <input className="input !rounded-xl !bg-surface font-bold text-sm px-4 py-3.5 w-full" placeholder="Title *" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} required />
-          <select className="select !rounded-xl !bg-surface font-bold text-sm py-3.5 px-4 w-full" value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>{cats.filter(c=>c.key!=="all").map(c=><option key={c.key} value={c.key}>{c.label}</option>)}</select>
-          <textarea className="input !rounded-xl !bg-surface font-medium text-sm px-4 py-3.5 w-full min-h-[120px] resize-none" placeholder="What's on your mind? *" value={form.content} onChange={e=>setForm({...form,content:e.target.value})} required />
-          <div className="flex gap-3 pt-2"><button type="button" onClick={()=>setShowNew(false)} className="flex-1 btn btn-secondary !rounded-xl py-3.5 font-bold text-sm">Cancel</button><button type="submit" disabled={saving} className="flex-[2] btn btn-primary !rounded-xl py-3.5 font-bold text-sm shadow-xl shadow-primary/20">{saving?"Posting...":"Post"}</button></div>
-        </form>
-      </div></div>}
+
+      {/* New Discussion Modal */}
+      {showNew && (
+        <div className="modal-overlay !bg-black/60 backdrop-blur-sm z-[100]" onClick={() => setShowNew(false)}>
+          <div className="bg-surface-raised w-full max-w-2xl sm:rounded-[2.5rem] h-full sm:h-auto overflow-y-auto !p-6 sm:!p-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-text-primary tracking-tight">New Discussion</h3>
+              <button onClick={() => setShowNew(false)} className="p-2 rounded-full hover:bg-surface text-text-tertiary"><X className="w-6 h-6" strokeWidth={2.5} /></button>
+            </div>
+            <form onSubmit={createT} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Title *</label>
+                <input 
+                  className="w-full h-14 bg-surface border border-border rounded-[1.5rem] px-5 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm" 
+                  placeholder="What is this discussion about?" 
+                  value={form.title} 
+                  onChange={e => setForm({...form, title: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Category</label>
+                <select 
+                  className="w-full h-14 bg-surface border border-border rounded-[1.5rem] px-5 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm appearance-none" 
+                  value={form.category} 
+                  onChange={e => setForm({...form, category: e.target.value})}
+                >
+                  {cats.filter(c => c.key !== "all").map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-text-tertiary ml-1">Message *</label>
+                <textarea 
+                  className="w-full min-h-[160px] bg-surface border border-border rounded-[1.5rem] p-5 font-bold text-text-primary focus:border-primary outline-none transition-all shadow-sm resize-none" 
+                  placeholder="Write your message here..." 
+                  value={form.content} 
+                  onChange={e => setForm({...form, content: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button type="button" onClick={() => setShowNew(false)} className="flex-1 h-14 bg-surface rounded-[1.5rem] border border-border text-text-primary hover:bg-surface-raised font-black uppercase tracking-widest text-[10px] transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="flex-[2] h-14 bg-primary text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-transform active:scale-95 disabled:opacity-50">
+                  {saving ? "Posting..." : "Post Discussion"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

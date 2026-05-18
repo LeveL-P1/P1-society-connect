@@ -9,6 +9,7 @@ import {
   User, ShieldCheck, Mail, IndianRupee, Info
 } from "lucide-react";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 interface TenantEntry {
   id: string;
@@ -406,7 +407,7 @@ export default function TenantsPage() {
                           <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[140px]">{t.flat.ownerName}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <StatusBadge status={t.flat.ownerLinked ? "active" : "inactive"} size="sm" />
+                          <StatusBadge status={t.flat.ownerLinked ? "active" : "inactive"} />
                           <Info className="w-3.5 h-3.5 text-slate-300 cursor-help" />
                         </div>
                       </div>

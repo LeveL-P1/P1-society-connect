@@ -351,7 +351,7 @@ export default function MyBillsPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-black text-text-primary">{formatCurrency(inv.amount)}</p>
-                    <StatusBadge status={inv.status} size="sm" />
+                    <StatusBadge status={inv.status} />
                   </div>
                 </div>
               ))
@@ -385,7 +385,7 @@ export default function MyBillsPage() {
                    </div>
                    <div className="text-right">
                      <p className="font-black text-text-primary">{formatCurrency(pay.amount)}</p>
-                     <StatusBadge status={pay.status} size="sm" />
+                     <StatusBadge status={pay.status} />
                    </div>
                  </div>
                ))
